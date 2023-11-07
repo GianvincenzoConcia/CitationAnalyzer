@@ -3,8 +3,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 
-
-#app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 
 
 # La funzione ricerca la conferenza su DBLP
@@ -13,7 +12,7 @@ def cerca_conferenza(conference_query):
 
 
 # Pagina iniziale con il form di ricerca per la conferenza specifica
-#@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         conference_query = request.form['conference_query']
@@ -52,9 +51,11 @@ def trova_numero_citazioni_su_google_scholar(nome_articolo):
     except Exception as e:
         return f"Si è verificato un errore: {str(e)}"
 
+# Avvio applicazione Flask usando il server web Waitress
+if __name__ == '__main__':
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=8080)
 
-#if __name__ == '__main__':
-#app.run(debug=True)
 # Esempio di utilizzo
 nome_articolo = "Babbo Natale, Gesù Adulto. In cosa crede chi crede?"  # Inserisci il nome del tuo articolo
 citazioni = trova_numero_citazioni_su_google_scholar(nome_articolo)
