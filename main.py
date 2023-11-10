@@ -2,13 +2,35 @@ from flask import Flask, render_template, request
 import requests
 import re
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 app = Flask(__name__, template_folder='templates')
 
 
 # La funzione ricerca la conferenza su DBLP
 def cerca_conferenza(conference_query):
-    pass
+    driver = webdriver.Chrome()  # Assicurati di avere ChromeDriver installato e il path corretto qui
+    driver.get(f"https://dblp.org/search?q={conference_query}")
+
+    try:
+        # Trova e clicca sul primo risultato della ricerca, dopo aver atteso la presenza di un elemento cliccabile
+        first_result = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'result-list')))
+        first_result.click()
+        conference_query = first_result.text.strip()
+
+        # Ottieni il titolo dalla pagina del risultato
+       # WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'headline')))
+       # conference_query = driver.find_element(By.CLASS_NAME, 'headline').text.strip()
+
+        driver.quit()
+        return conference_query
+
+    except:
+        driver.quit()
+        return "Errore durante la ricerca della conferenza su DBLP"
 
 
 # Pagina iniziale con il form di ricerca per la conferenza specifica
@@ -55,6 +77,7 @@ def trova_numero_citazioni_su_google_scholar(nome_articolo):
 if __name__ == '__main__':
     from waitress import serve
     serve(app, host="0.0.0.0", port=8080)
+
 
 # Esempio di utilizzo
 nome_articolo = "Babbo Natale, Gesù Adulto. In cosa crede chi crede?"  # Inserisci il nome del tuo articolo
