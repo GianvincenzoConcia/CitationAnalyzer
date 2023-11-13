@@ -3,28 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <title>Ricerca conferenza su DBLP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1em;
+            margin-bottom: 0;
+        }
+
+        form {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        #result-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 8px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 8px;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Inserisci il titolo e l'anno della conferenza:</h1>
+<h1>ARTICOLI PIU' CITATI NELLE CONFERENZE</h1>
+<div id="input-container">
     <form action="/search" method="post">
-        <label for="conference_title">Titolo:</label>
+        <label for="conference_title">Inserire il titolo della conferenza:</label>
         <input type="text" name="conference_title" required>
 
-        <label for="conference_year">Anno:</label>
+        <label for="conference_year">Inserire l'anno:</label>
         <input type="text" name="conference_year" required>
 
         <input type="submit" value="Cerca">
     </form>
-  <!-- Aggiunto un elemento per visualizzare il risultato -->
-   <div id="result-container">
-        {% if result %}
-            <h2>Risultati della conferenza:</h2>
-            <ul>
-                {% for article_title in result %}
-                    <li>{{ article_title }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-   </div>
+</div>
+
+<div id="result-container">
+    {% if result %}
+    <h2>RISULTATI</h2>
+    <ul>
+        {% for article_title in result %}
+        <li>{{ article_title }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
 </body>
 </html>
