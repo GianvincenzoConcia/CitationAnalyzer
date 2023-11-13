@@ -5,11 +5,26 @@
     <title>Ricerca conferenza su DBLP</title>
 </head>
 <body>
-    <h1>Ricerca conferenza su DBLP</h1>
-<form method="POST">
-    <label for="conference_query">Inserisci il nome della conferenza</label>
-    <input type="text" id="conference_query" name="conference_query" required>
-    <button type="submit">Cerca</button>
-</form>
+    <h1>Inserisci il titolo e l'anno della conferenza:</h1>
+    <form action="/search" method="post">
+        <label for="conference_title">Titolo:</label>
+        <input type="text" name="conference_title" required>
+
+        <label for="conference_year">Anno:</label>
+        <input type="text" name="conference_year" required>
+
+        <input type="submit" value="Cerca">
+    </form>
+  <!-- Aggiunto un elemento per visualizzare il risultato -->
+   <div id="result-container">
+        {% if result %}
+            <h2>Risultati della conferenza:</h2>
+            <ul>
+                {% for article_title in result %}
+                    <li>{{ article_title }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+   </div>
 </body>
 </html>
