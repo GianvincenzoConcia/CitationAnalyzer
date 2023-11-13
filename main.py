@@ -15,9 +15,9 @@ app = Flask(__name__, template_folder='templates')
 # La funzione ricerca la conferenza su DBLP e filtra per anno
 def get_article_titles(conference_title, conference_year):
     # Utilizza Selenium per navigare su DBLP e ottenere il contenuto della pagina
-    #options = webdriver.ChromeOptions()
-    #options.add_argument('--headless')
-    driver = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    driver = webdriver.Chrome(options=options)
 
     try:
         search_url = f"https://dblp.org/search?q={conference_title}"
@@ -34,14 +34,24 @@ def get_article_titles(conference_title, conference_year):
         soup = BeautifulSoup(page_content, 'html.parser')
 
         year_element = soup.find('span', {'itemprop': 'datePublished'}, string=lambda text: str(conference_year) in text)
+        print(year_element)
 
         if year_element:
             # Trova l'elemento "contents" all'interno del contesto di year_element
-            contents_button = year_element.find_next('button', {'class': 'toc-link'})
+            #contents_button = year_element.find_next('button', {'class': 'toc-link'})
+            #contents_button = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'toc-link')))
 
-            if contents_button:
-                # Usa Selenium per cliccare sull'elemento 'contents'
-                contents_button.click()
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@class="title"]')))
+
+            # Trova il link contents dell'anno scelto
+            contents_line = year_element.find_next('a', {'class': 'toc-link'})
+
+            print(contents_line)
+
+            if contents_line:
+
+                # Accede a contents
+                driver.get(contents_line['href'])
 
                 # Attendere che la pagina successiva si carichi completamente
                 WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@class="title"]')))
@@ -56,7 +66,9 @@ def get_article_titles(conference_title, conference_year):
                 article_titles = [title.text.strip() for title in soup.find_all('span', class_='title')]
 
                 return article_titles
-        else: print(f"Anno della conferenza {conference_year} non trovato.")
+
+            else: "Nessun articolo trovato"
+        else: f"Anno della conferenza {conference_year} non trovato."
 
     finally:
         driver.quit()
