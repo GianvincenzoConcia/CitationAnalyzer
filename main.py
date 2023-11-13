@@ -1,5 +1,3 @@
-import string
-
 from flask import Flask, render_template, request
 import requests
 import re
@@ -34,19 +32,14 @@ def get_article_titles(conference_title, conference_year):
         soup = BeautifulSoup(page_content, 'html.parser')
 
         year_element = soup.find('span', {'itemprop': 'datePublished'}, string=lambda text: str(conference_year) in text)
-        print(year_element)
 
         if year_element:
-            # Trova l'elemento "contents" all'interno del contesto di year_element
-            #contents_button = year_element.find_next('button', {'class': 'toc-link'})
-            #contents_button = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'toc-link')))
 
+            # Attende il caricamento della pagina
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@class="title"]')))
 
             # Trova il link contents dell'anno scelto
             contents_line = year_element.find_next('a', {'class': 'toc-link'})
-
-            print(contents_line)
 
             if contents_line:
 
