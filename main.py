@@ -64,15 +64,21 @@ def get_article_titles(conference_title, conference_year):
 
                 block_elements = soup.find_all("cite", attrs={"class": "data tts-content"})
 
-                for block_element in block_elements:
-                    authors = block_element.find_all("span", attrs={"itemprop": "author"})
+                article_titles_list = []
+                author_list = []
+                article_data_list = []
+
+                for i in range(1, len(block_elements)):
+                    authors = block_elements[i].find_all("span", attrs={"itemprop": "author"})
                     author_list = [author.find("span", attrs={"itemprop": "name"}).text.strip() for author in authors]
-                    titles = block_element.find("span", attrs={"class": "title"}).text.strip()
+                    article_title = block_elements[i].find("span", attrs={"class": "title"}).text.strip()
+                    article_titles_list.append(article_title)
+                    article_data_list.append((article_title, author_list))
+
+                return article_data_list
 
                 # Trova i titoli degli articoli utilizzando Beautiful Soup
                 #article_titles = [title.text.strip() for title in soup.find_all('span', class_='title')]
-
-                #return article_titles
 
             else:
                 flash("Nessun articolo trovato", 'error')
