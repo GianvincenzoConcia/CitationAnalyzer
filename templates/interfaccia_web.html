@@ -97,8 +97,11 @@
     {% if result %}
     <h2>RISULTATI</h2>
     <ul>
-        {% for article_title in result %}
-        <li>{{ article_title }}</li>
+        {% for author, title in result %}
+            <li>
+                <strong>Autore(i):</strong> {{ author|join(", ") }}<br>
+                <strong>Titolo:</strong> {{ title }}
+            </li>
         {% endfor %}
     </ul>
     {% endif %}
