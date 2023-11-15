@@ -3,6 +3,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -20,10 +21,13 @@ def get_article_titles(conference_title, conference_year):
     try:
         search_url = f"https://dblp.org/search?q={conference_title}"
         driver.get(search_url)
+        try:
+            # Utilizza Selenium per navigare alla pagina della conferenza e ottenere il contenuto della pagina
+            first_result = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'result-list')))
+            first_result.click()
 
-        # Utilizza Selenium per navigare alla pagina della conferenza e ottenere il contenuto della pagina
-        first_result = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'result-list')))
-        first_result.click()
+        except TimeoutException:
+            return f"Conferenza {conference_title} non trovata"
 
         # Ottieni il contenuto della pagina
         page_content = driver.page_source
@@ -60,8 +64,12 @@ def get_article_titles(conference_title, conference_year):
 
                 return article_titles
 
-            else: "Nessun articolo trovato"
-        else: f"Anno della conferenza {conference_year} non trovato."
+            else:
+                raise Exception("Nessun articolo trovato")
+        else:
+            raise Exception(f"Anno della conferenza {conference_year} non trovato.")
+    except Exception as e:
+        return str(e)
 
     finally:
         driver.quit()
@@ -78,9 +86,9 @@ def search():
         conference_year = request.form['conference_year']
 
         # Ottieni i titoli degli articoli utilizzando Selenium e Beautiful Soup
-        article_titles = get_article_titles(conference_title, conference_year)
+        result = get_article_titles(conference_title, conference_year)
 
-        return render_template('interfaccia_web.html', result=article_titles)
+        return render_template('interfaccia_web.html', result=result)
 
 
 

@@ -94,13 +94,15 @@
 </div>
 
 <div id="result-container">
-    {% if result %}
-    <h2>RISULTATI</h2>
-    <ul>
-        {% for article_title in result %}
-        <li>{{ article_title }}</li>
-        {% endfor %}
-    </ul>
+    {% if result and not result.startswith("Anno della conferenza") %}
+        <h2>RISULTATI</h2>
+        <ul>
+            {% for article_title in result %}
+                <li>{{ article_title }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>{{ result }}</p>
     {% endif %}
 </div>
 </body>
