@@ -95,14 +95,12 @@
 
 <div id="result-container">
     {% if result %}
-        <h2>RISULTATI</h2>
-        <ul>
-            {% for article_title in result %}
-                <li>{{ article_title }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>{{ result }}</p>
+    <h2>RISULTATI</h2>
+    <ul>
+        {% for article_title in result %}
+        <li>{{ article_title }}</li>
+        {% endfor %}
+    </ul>
     {% endif %}
     <!-- Aggiungi questa parte alla fine del tuo template -->
     {% with messages = get_flashed_messages(with_categories=true) %}
