@@ -102,6 +102,17 @@
         {% endfor %}
     </ul>
     {% endif %}
+    <!-- Aggiungi questa parte alla fine del tuo template -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
 </div>
+
 </body>
 </html>

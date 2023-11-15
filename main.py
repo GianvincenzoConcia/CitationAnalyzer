@@ -1,13 +1,16 @@
-from flask import Flask, render_template, request
+import flask
+from flask import Flask, render_template, request, flash, redirect, url_for
 import requests
 import re
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 app = Flask(__name__, template_folder='templates')
+app.secret_key = 'il_tuo_segreto'  # Sostituisci con una chiave segreta più sicura
 
 
 # La funzione ricerca la conferenza su DBLP e filtra per anno
@@ -20,10 +23,13 @@ def get_article_titles(conference_title, conference_year):
     try:
         search_url = f"https://dblp.org/search?q={conference_title}"
         driver.get(search_url)
-
-        # Utilizza Selenium per navigare alla pagina della conferenza e ottenere il contenuto della pagina
-        first_result = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'result-list')))
-        first_result.click()
+        try:
+            # Utilizza Selenium per navigare alla pagina della conferenza e ottenere il contenuto della pagina
+            first_result = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'result-list')))
+            first_result.click()
+        except TimeoutException:
+            flash(f"Conferenza {conference_title} non trovata", "error")
+            return None
 
         # Ottieni il contenuto della pagina
         page_content = driver.page_source
@@ -31,7 +37,8 @@ def get_article_titles(conference_title, conference_year):
         # Utilizza Beautiful Soup per analizzare il contenuto HTML
         soup = BeautifulSoup(page_content, 'html.parser')
 
-        year_element = soup.find('span', {'itemprop': 'datePublished'}, string=lambda text: str(conference_year) in text)
+        year_element = soup.find('span', {'itemprop': 'datePublished'},
+                                 string=lambda text: str(conference_year) in text)
 
         if year_element:
 
@@ -60,15 +67,23 @@ def get_article_titles(conference_title, conference_year):
 
                 return article_titles
 
-            else: "Nessun articolo trovato"
-        else: f"Anno della conferenza {conference_year} non trovato."
-
+            else:
+                flash("Nessun articolo trovato", 'error')
+                return None
+        else:
+            flash(f"Anno della conferenza {conference_year} non trovato.", 'error')
+            return None
+    except Exception as e:
+        flash("Si è verificato un errore: " + str(e), 'error')
+        return None
     finally:
         driver.quit()
+
 
 @app.route('/')
 def index():
     return render_template('interfaccia_web.html', result=None)
+
 
 # Pagina iniziale con il form di ricerca per la conferenza specifica
 @app.route('/search', methods=['POST'])
@@ -80,8 +95,10 @@ def search():
         # Ottieni i titoli degli articoli utilizzando Selenium e Beautiful Soup
         article_titles = get_article_titles(conference_title, conference_year)
 
-        return render_template('interfaccia_web.html', result=article_titles)
-
+        if article_titles is not None:
+            return render_template('interfaccia_web.html', result=article_titles)
+        else:
+            return redirect(url_for('index'))
 
 
 def trova_numero_citazioni_su_google_scholar(nome_articolo):
@@ -111,11 +128,12 @@ def trova_numero_citazioni_su_google_scholar(nome_articolo):
     except Exception as e:
         return f"Si è verificato un errore: {str(e)}"
 
+
 # Avvio applicazione Flask usando il server web Waitress
 if __name__ == '__main__':
     from waitress import serve
-    serve(app, host="0.0.0.0", port=8080)
 
+    serve(app, host="0.0.0.0", port=8080)
 
 # Esempio di utilizzo
 nome_articolo = "Babbo Natale, Gesù Adulto. In cosa crede chi crede?"  # Inserisci il nome del tuo articolo
