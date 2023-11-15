@@ -54,7 +54,7 @@ def get_article_titles(conference_title, conference_year):
                 driver.get(contents_line['href'])
 
                 # Attendere che la pagina successiva si carichi completamente
-                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@class="title"]')))
+                WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, '//*[@class="title"]')))
 
                 # Ottenere il nuovo HTML dopo il clic
                 new_page_source = driver.page_source
@@ -62,10 +62,17 @@ def get_article_titles(conference_title, conference_year):
                 # Utilizza BeautifulSoup per analizzare il nuovo HTML
                 soup = BeautifulSoup(new_page_source, 'html.parser')
 
-                # Trova i titoli degli articoli utilizzando Beautiful Soup
-                article_titles = [title.text.strip() for title in soup.find_all('span', class_='title')]
+                block_elements = soup.find_all("cite", attrs={"class": "data tts-content"})
 
-                return article_titles
+                for block_element in block_elements:
+                    authors = block_element.find_all("span", attrs={"itemprop": "author"})
+                    author_list = [author.find("span", attrs={"itemprop": "name"}).text.strip() for author in authors]
+                    titles = block_element.find("span", attrs={"class": "title"}).text.strip()
+
+                # Trova i titoli degli articoli utilizzando Beautiful Soup
+                #article_titles = [title.text.strip() for title in soup.find_all('span', class_='title')]
+
+                #return article_titles
 
             else:
                 flash("Nessun articolo trovato", 'error')
