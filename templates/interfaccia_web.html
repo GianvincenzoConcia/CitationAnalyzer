@@ -96,17 +96,12 @@
 <div id="result-container">
     {% if result %}
     <h2>RISULTATI</h2>
-    <ul>
-        {% for article_data in result %}
-        <li>
-            <strong>Titolo:</strong> {{ article_data[0] }}<br>
-            <strong>Autore/i:</strong>
-            <ul>
-                {% for author in article_data[1] %}
-                <li>{{ author }}</li>
-                {% endfor %}
-            </ul>
-        </li>
+   <ul>
+        {% for title,author in result %}
+            <li>
+                <strong>Titolo:</strong> {{ title }}<br>
+                <strong>Autore/i:</strong> {{ author|join(", ") }}
+            </li>
         {% endfor %}
     </ul>
     {% endif %}
