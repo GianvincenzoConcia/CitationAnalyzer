@@ -97,10 +97,12 @@
     {% if result %}
     <h2>RISULTATI</h2>
    <ul>
-        {% for title,author in result %}
+        {% for title,author,citations in result %}
             <li>
                 <strong>Titolo:</strong> {{ title }}<br>
                 <strong>Autore/i:</strong> {{ author|join(", ") }}
+                <strong>Citazioni:</strong> {{ cite }}<br>
+
             </li>
         {% endfor %}
     </ul>
