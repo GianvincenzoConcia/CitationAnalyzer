@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
 import requests
 import re
+from scholarly import scholarly
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common import TimeoutException
@@ -24,7 +25,8 @@ def get_article_titles(conference_title, conference_year):
         driver.get(search_url)
         try:
             # Utilizza Selenium per navigare alla pagina della conferenza e ottenere il contenuto della pagina
-            first_result = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'result-list')))
+            first_result = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'result-list')))
             first_result.click()
         except TimeoutException:
             flash(f"Conferenza {conference_title} non trovata", "error")
@@ -66,18 +68,21 @@ def get_article_titles(conference_title, conference_year):
                 article_titles_list = []
                 author_list = []
                 article_data_list = []
+                numero_citazioni = 0
 
                 for i in range(1, len(block_elements)):
                     authors = block_elements[i].find_all("span", attrs={"itemprop": "author"})
                     author_list = [author.find("span", attrs={"itemprop": "name"}).text.strip() for author in authors]
                     article_title = block_elements[i].find("span", attrs={"class": "title"}).text.strip()
+                    #numero_citazioni = get_citations(article_title)
+                    #print(numero_citazioni)
                     article_titles_list.append(article_title)
-                    article_data_list.append((article_title, author_list))
+                    article_data_list.append((article_title, author_list, numero_citazioni))
 
                 return article_data_list
 
                 # Trova i titoli degli articoli utilizzando Beautiful Soup
-                #article_titles = [title.text.strip() for title in soup.find_all('span', class_='title')]
+                # article_titles = [title.text.strip() for title in soup.find_all('span', class_='title')]
 
             else:
                 flash("Nessun articolo trovato", 'error')
@@ -113,32 +118,47 @@ def search():
             return redirect(url_for('index'))
 
 
-def trova_numero_citazioni_su_google_scholar(nome_articolo):
+# def trova_numero_citazioni_su_google_scholar(nome_articolo):
+#     try:
+#         # Costruisci l'URL di Google Scholar per la ricerca dell'articolo
+#         ricerca_url = f"https://scholar.google.com/scholar?hl=en&q={nome_articolo}"
+#
+#         # Esegui una richiesta HTTP per ottenere la pagina dei risultati di Google Scholar
+#         pagina = requests.get(ricerca_url)
+#
+#         # Verifica se la richiesta ha avuto successo
+#         if pagina.status_code == 200:
+#             # Utilizza BeautifulSoup per analizzare la pagina HTML
+#             soup = BeautifulSoup(pagina.text, 'html.parser')
+#
+#             # Trova l'elemento che contiene il numero di citazioni
+#             citazioni_element = soup.find("a", {"href": "gs_fl gs_flb"})
+#             print(citazioni_element)
+#
+#             # Estrai il numero di citazioni dall'elemento
+#             if citazioni_element:
+#                 citations = ''.join(filter(str.isdigit, citazioni_element))
+#                 return citations
+#                 #numero_citazioni = re.search(r"\d{1,}", citazioni_element.text).group()
+#                 #return numero_citazioni
+#             else:
+#                 return "Citazioni non trovate"
+#         else:
+#             print(pagina.status_code)
+#             return "Errore nella richiesta HTTP"
+#     except Exception as e:
+#         return f"Si è verificato un errore: {str(e)}"
+
+
+def get_citations(article_title):
     try:
-        # Costruisci l'URL di Google Scholar per la ricerca dell'articolo
-        ricerca_url = f"https://scholar.google.com/scholar?hl=en&q={nome_articolo}"
-
-        # Esegui una richiesta HTTP per ottenere la pagina dei risultati di Google Scholar
-        pagina = requests.get(ricerca_url)
-
-        # Verifica se la richiesta ha avuto successo
-        if pagina.status_code == 200:
-            # Utilizza BeautifulSoup per analizzare la pagina HTML
-            soup = BeautifulSoup(pagina.text, 'html.parser')
-
-            # Trova l'elemento che contiene il numero di citazioni
-            citazioni_element = soup.find('div', {"class": "gs_fl gs_flb"})
-
-            # Estrai il numero di citazioni dall'elemento
-            if citazioni_element:
-                numero_citazioni = re.search(r"\d{1,}", citazioni_element.text).group()
-                return numero_citazioni
-            else:
-                return "Citazioni non trovate"
-        else:
-            return "Errore nella richiesta HTTP"
+        search_query = scholarly.search_pubs(article_title)
+        publication = next(search_query)
+        citations = publication["num_citations"]
+        return citations
     except Exception as e:
-        return f"Si è verificato un errore: {str(e)}"
+        print(f"Errore: {e}")
+        return None
 
 
 # Avvio applicazione Flask usando il server web Waitress
@@ -148,6 +168,6 @@ if __name__ == '__main__':
     serve(app, host="0.0.0.0", port=8080)
 
 # Esempio di utilizzo
-nome_articolo = "Babbo Natale, Gesù Adulto. In cosa crede chi crede?"  # Inserisci il nome del tuo articolo
-citazioni = trova_numero_citazioni_su_google_scholar(nome_articolo)
+nome_articolo = "Photo Tours"  # Inserisci il nome del tuo articolo
+citazioni = get_citations(nome_articolo)
 print(f"L'articolo '{nome_articolo}' ha {citazioni} citazioni su Google Scholar.")
