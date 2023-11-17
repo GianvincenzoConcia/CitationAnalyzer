@@ -1,4 +1,5 @@
 import time
+from fake_useragent import UserAgent
 
 from flask import Flask, render_template, request, flash, redirect, url_for
 import requests
@@ -71,7 +72,6 @@ def get_article_titles(conference_title, conference_year):
                 article_data_list = []
 
                 for i in range(1, len(block_elements)):
-                    time.sleep(2)
                     authors = block_elements[i].find_all("span", attrs={"itemprop": "author"})
                     author_list = [author.find("span", attrs={"itemprop": "name"}).text.strip() for author in authors]
                     article_title = block_elements[i].find("span", attrs={"class": "title"}).text.strip()
@@ -152,11 +152,16 @@ def search():
 
 def get_citations(article_title):
     try:
+
+        user_agent = UserAgent()
+        random_user_agent = user_agent.random
+        headers = {'User-Agent': random_user_agent}
+
         # Formatta il titolo dell'articolo per la query
         query = f'https://scholar.google.com/scholar?q={article_title.replace(" ", "+")}'
 
         # Esegui la richiesta HTTP
-        response = requests.get(query)
+        response = requests.get(query, headers=headers)
 
         # Utilizza BeautifulSoup per analizzare la pagina dei risultati
         soup = BeautifulSoup(response.text, 'html.parser')
