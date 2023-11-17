@@ -63,7 +63,6 @@
 
         h2 {
             color: #333;
-            text-align: center;
         }
 
         ul {
@@ -95,13 +94,26 @@
 
 <div id="result-container">
     {% if result %}
-    <h2>RISULTATI</h2>
-   <ul>
-        {% for title,author, citation in result %}
-            <li>
-                <strong>Titolo:</strong> {{ title }}<br>
-                <strong>Autore/i:</strong> {{ author|join(", ") }}<br>
-                <strong>Citazioni:</strong> {{ cite }}
+
+     <ul style="padding-left: 0;">
+        <li style="display: flex; align-items: baseline;">
+            <div style="flex: 1; border-right: 1px solid #ccc; padding-right: 10px;">
+                <strong>Risultati</strong>
+            </div>
+            <div style="flex: 1; text-align: right;">
+                <strong>Citazioni</strong>
+            </div>
+        </li>
+
+        {% for title, author, citations in result %}
+            <li style="display: flex; align-items: baseline;">
+                <div style="flex: 1; border-right: 1px solid #ccc; padding-right: 10px;">
+                   <strong>Titolo: </strong> {{ title }}<br>
+                   <strong>Autore/i: </strong> {{ author|join(", ") }}<br>
+                </div>
+                <div style="flex: 1; text-align: right;">
+                    {{ citations }}<br>
+                </div>
             </li>
         {% endfor %}
     </ul>

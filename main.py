@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask, render_template, request, flash, redirect, url_for
 import requests
 import re
@@ -66,16 +68,15 @@ def get_article_titles(conference_title, conference_year):
                 block_elements = soup.find_all("cite", attrs={"class": "data tts-content"})
 
                 article_titles_list = []
-                author_list = []
                 article_data_list = []
-                numero_citazioni = 0
 
                 for i in range(1, len(block_elements)):
+                    time.sleep(2)
                     authors = block_elements[i].find_all("span", attrs={"itemprop": "author"})
                     author_list = [author.find("span", attrs={"itemprop": "name"}).text.strip() for author in authors]
                     article_title = block_elements[i].find("span", attrs={"class": "title"}).text.strip()
-                    #numero_citazioni = get_citations(article_title)
-                    #print(numero_citazioni)
+                    numero_citazioni = get_citations(article_title)
+
                     article_titles_list.append(article_title)
                     article_data_list.append((article_title, author_list, numero_citazioni))
 
@@ -83,7 +84,6 @@ def get_article_titles(conference_title, conference_year):
 
                 # Trova i titoli degli articoli utilizzando Beautiful Soup
                 # article_titles = [title.text.strip() for title in soup.find_all('span', class_='title')]
-
             else:
                 flash("Nessun articolo trovato", 'error')
                 return None
@@ -152,14 +152,29 @@ def search():
 
 def get_citations(article_title):
     try:
-        search_query = scholarly.search_pubs(article_title)
-        publication = next(search_query)
-        citations = publication["num_citations"]
-        return citations
-    except Exception as e:
-        print(f"Errore: {e}")
-        return None
+        # Formatta il titolo dell'articolo per la query
+        query = f'https://scholar.google.com/scholar?q={article_title.replace(" ", "+")}'
 
+        # Esegui la richiesta HTTP
+        response = requests.get(query)
+
+        # Utilizza BeautifulSoup per analizzare la pagina dei risultati
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Trova l'elemento che contiene il numero di citazioni
+        citations_element = soup.find('a', {'href': lambda x: x and 'cites' in x})
+
+        if citations_element:
+            # Estrai il numero di citazioni utilizzando una regular expression
+            citations_text = citations_element.text
+            citations = re.search(r'\d+', citations_text).group()
+            return citations
+        else:
+            return 'N/A'  # Se il numero di citazioni non è disponibile
+
+    except Exception as e:
+        print(f"Errore durante il recupero delle citazioni: {e}")
+        return 'N/A'
 
 # Avvio applicazione Flask usando il server web Waitress
 if __name__ == '__main__':
