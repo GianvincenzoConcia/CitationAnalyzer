@@ -8,6 +8,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 app = Flask(__name__, template_folder='templates')
+app.secret_key = 'segreto'
 
 SCOPUS_API_KEY = "ce1da58cc35b89014c26ff7de31cca85"
 

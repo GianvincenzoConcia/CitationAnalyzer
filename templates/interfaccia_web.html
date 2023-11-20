@@ -76,6 +76,9 @@
             padding-bottom: 8px;
         }
     </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
@@ -129,6 +132,48 @@
       {% endif %}
     {% endwith %}
 </div>
+
+<button onclick="visualizzaGrafico()">Visualizza Grafico</button>
+<canvas id="grafico" style="display: none;"></canvas>
+
+<script>
+    function visualizzaGrafico() {
+        var datiArticoli = {{ result|tojson | safe }}; // Ottieni i dati dagli articoli passati dal tuo controller Flask
+
+        // Mostra il canvas del grafico
+        var canvas = document.getElementById("grafico");
+        canvas.style.display = "block";
+
+        // Crea il grafico a barre
+        var ctx = canvas.getContext("2d");
+        new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: datiArticoli.map(function (articolo) {
+                    return articolo[0]; // Titolo dell'articolo
+                }),
+                datasets: [{
+                    label: "Numero di citazioni",
+                    data: datiArticoli.map(function (articolo) {
+                        return articolo[2]; // Numero di citazioni
+                    }),
+                    backgroundColor: "rgba(75, 192, 192, 0.2)",
+                    borderColor: "rgba(75, 192, 192, 1)",
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+
 
 </body>
 </html>
