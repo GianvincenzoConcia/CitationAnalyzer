@@ -1,10 +1,5 @@
-import time
-from fake_useragent import UserAgent
-
 from flask import Flask, render_template, request, flash, redirect, url_for
 import requests
-import re
-from scholarly import scholarly
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common import TimeoutException
@@ -13,8 +8,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 app = Flask(__name__, template_folder='templates')
-app.secret_key = 'il_tuo_segreto'  # Sostituisci con una chiave segreta più sicura
 
+SCOPUS_API_KEY = "ce1da58cc35b89014c26ff7de31cca85"
 
 # La funzione ricerca la conferenza su DBLP e filtra per anno
 def get_article_titles(conference_title, conference_year):
@@ -97,6 +92,25 @@ def get_article_titles(conference_title, conference_year):
         driver.quit()
 
 
+def get_citations(article_title):
+    try:
+        # Esegui una ricerca su Scopus utilizzando la chiave API
+        url = f'https://api.elsevier.com/content/search/scopus?query=TITLE("{article_title}")&apiKey={SCOPUS_API_KEY}'
+        response = requests.get(url)
+        data = response.json()
+
+        # Estrai il numero di citazioni dall'output della ricerca
+        if 'search-results' in data and 'entry' in data['search-results']:
+            entry = data['search-results']['entry'][0]
+            if 'citedby-count' in entry:
+                return entry['citedby-count']
+        return 0
+    except Exception as e:
+        print(f"Errore nel recuperare citazioni per '{article_title}' da Scopus: {str(e)}")
+        return 0
+
+
+
 @app.route('/')
 def index():
     return render_template('interfaccia_web.html', result=None)
@@ -118,76 +132,8 @@ def search():
             return redirect(url_for('index'))
 
 
-# def trova_numero_citazioni_su_google_scholar(nome_articolo):
-#     try:
-#         # Costruisci l'URL di Google Scholar per la ricerca dell'articolo
-#         ricerca_url = f"https://scholar.google.com/scholar?hl=en&q={nome_articolo}"
-#
-#         # Esegui una richiesta HTTP per ottenere la pagina dei risultati di Google Scholar
-#         pagina = requests.get(ricerca_url)
-#
-#         # Verifica se la richiesta ha avuto successo
-#         if pagina.status_code == 200:
-#             # Utilizza BeautifulSoup per analizzare la pagina HTML
-#             soup = BeautifulSoup(pagina.text, 'html.parser')
-#
-#             # Trova l'elemento che contiene il numero di citazioni
-#             citazioni_element = soup.find("a", {"href": "gs_fl gs_flb"})
-#             print(citazioni_element)
-#
-#             # Estrai il numero di citazioni dall'elemento
-#             if citazioni_element:
-#                 citations = ''.join(filter(str.isdigit, citazioni_element))
-#                 return citations
-#                 #numero_citazioni = re.search(r"\d{1,}", citazioni_element.text).group()
-#                 #return numero_citazioni
-#             else:
-#                 return "Citazioni non trovate"
-#         else:
-#             print(pagina.status_code)
-#             return "Errore nella richiesta HTTP"
-#     except Exception as e:
-#         return f"Si è verificato un errore: {str(e)}"
-
-
-def get_citations(article_title):
-    try:
-
-        user_agent = UserAgent()
-        random_user_agent = user_agent.random
-        headers = {'User-Agent': random_user_agent}
-
-        # Formatta il titolo dell'articolo per la query
-        query = f'https://scholar.google.com/scholar?q={article_title.replace(" ", "+")}'
-
-        # Esegui la richiesta HTTP
-        response = requests.get(query, headers=headers)
-
-        # Utilizza BeautifulSoup per analizzare la pagina dei risultati
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Trova l'elemento che contiene il numero di citazioni
-        citations_element = soup.find('a', {'href': lambda x: x and 'cites' in x})
-
-        if citations_element:
-            # Estrai il numero di citazioni utilizzando una regular expression
-            citations_text = citations_element.text
-            citations = re.search(r'\d+', citations_text).group()
-            return citations
-        else:
-            return 'N/A'  # Se il numero di citazioni non è disponibile
-
-    except Exception as e:
-        print(f"Errore durante il recupero delle citazioni: {e}")
-        return 'N/A'
-
 # Avvio applicazione Flask usando il server web Waitress
 if __name__ == '__main__':
     from waitress import serve
 
     serve(app, host="0.0.0.0", port=8080)
-
-# Esempio di utilizzo
-nome_articolo = "Photo Tours"  # Inserisci il nome del tuo articolo
-citazioni = get_citations(nome_articolo)
-print(f"L'articolo '{nome_articolo}' ha {citazioni} citazioni su Google Scholar.")
