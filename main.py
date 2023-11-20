@@ -73,7 +73,8 @@ def get_article_titles(conference_title, conference_year):
                     numero_citazioni = get_citations(article_title)
 
                     article_titles_list.append(article_title)
-                    article_data_list.append((article_title, author_list, numero_citazioni))
+                    article_data_list.append((article_title, author_list, int(numero_citazioni)))
+                    article_data_list.sort(reverse=True, key=lambda x: x[2])
 
                 return article_data_list
 
