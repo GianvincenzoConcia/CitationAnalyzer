@@ -122,13 +122,6 @@
     </form>
 </div>
 
-{% if error_occurred %}
-<div style="text-align: center; color: red;">
-    <p>Si è verificato un errore: {{ error_message }}</p>
-</div>
-{% endif %}
-
-
 <div class="select-container">
     <select id="selectOption" onchange="showOption()">
         <option value="seleziona" selected>Seleziona un'opzione</option>
@@ -202,12 +195,7 @@
     }
 
     function visualizzaGrafico() {
-        var datiArticoli = {
-        {
-            result | tojson | safe
-        }
-    }
-        ; // Ottieni i dati dagli articoli passati dal tuo controller Flask
+        var datiArticoli = {{ result|tojson | safe }};
 
         // Mostra il canvas del grafico
         var canvas = document.getElementById("grafico");
