@@ -53,7 +53,31 @@
             background-color: #45a049;
         }
 
-        #result-container {
+        .select-container {
+            text-align: center;
+        }
+
+
+        select {
+            width: 45%;
+            padding: 8px;
+            box-sizing: border-box;
+            background-color: #4caf50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            display: block;
+            margin: auto;
+            text-align-last: center;
+        }
+
+        select:hover {
+            background-color: #45a049;
+        }
+
+        #classifica-container {
             max-width: 800px;
             margin: 20px auto;
             background-color: white;
@@ -78,11 +102,14 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
 
 </head>
 
 <body>
 <h1>ARTICOLI PIU' CITATI NELLE CONFERENZE</h1>
+
 <div id="input-container">
     <form action="/search" method="post">
         <label for="conference_title">Inserire il titolo della conferenza:</label>
@@ -95,10 +122,36 @@
     </form>
 </div>
 
-<div id="result-container">
-    {% if result %}
+{% if error_occurred %}
+<div style="text-align: center; color: red;">
+    <p>Si è verificato un errore: {{ error_message }}</p>
+</div>
+{% endif %}
 
-     <ul style="padding-left: 0;">
+
+<div class="select-container">
+    <select id="selectOption" onchange="showOption()">
+        <option value="seleziona" selected>Seleziona un'opzione</option>
+        <option value="classifica">Classifica</option>
+        <option value="grafico">Grafico</option>
+    </select>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div style="text-align: center; color: red;">
+        <ul>
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div id="classifica-container" style="display: none;">
+    {% if result %}
+    <ul style="padding-left: 0;">
         <li style="display: flex; align-items: baseline;">
             <div style="flex: 1; border-right: 1px solid #ccc; padding-right: 10px;">
                 <strong>Risultati</strong>
@@ -109,40 +162,60 @@
         </li>
 
         {% for title, author, citations in result %}
-            <li style="display: flex; align-items: baseline;">
-                <div style="flex: 1; border-right: 1px solid #ccc; padding-right: 10px;">
-                   <strong>Titolo: </strong> {{ title }}<br>
-                   <strong>Autore/i: </strong> {{ author|join(", ") }}<br>
-                </div>
-                <div style="flex: 1; text-align: right;">
-                    {{ citations }}<br>
-                </div>
-            </li>
+        <li style="display: flex; align-items: baseline;">
+            <div style="flex: 1; border-right: 1px solid #ccc; padding-right: 10px;">
+                <strong>Titolo: </strong> {{ title }}<br>
+                <strong>Autore/i: </strong> {{ author|join(", ") }}<br>
+            </div>
+            <div style="flex: 1; text-align: right;">
+                {{ citations }}<br>
+            </div>
+        </li>
         {% endfor %}
     </ul>
     {% endif %}
-    <!-- Aggiungi questa parte alla fine del tuo template -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul>
-          {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+
+
 </div>
 
-<button onclick="visualizzaGrafico()">Visualizza Grafico</button>
-<canvas id="grafico" style="display: none;"></canvas>
+<!-- Contenuto del "Grafico" -->
+<div id="grafico-container" style="display: none;">
+    <canvas id="grafico"></canvas>
+</div>
+
 
 <script>
+
+    function showOption() {
+        var selectElement = document.getElementById("selectOption");
+        var classificaContainer = document.getElementById("classifica-container");
+        var graficoContainer = document.getElementById("grafico-container");
+
+        if (selectElement.value === "classifica") {
+            classificaContainer.style.display = "block";
+            graficoContainer.style.display = "none";
+        } else if (selectElement.value === "grafico") {
+            classificaContainer.style.display = "none";
+            graficoContainer.style.display = "block";
+            visualizzaGrafico();
+        }
+    }
+
     function visualizzaGrafico() {
-        var datiArticoli = {{ result|tojson | safe }}; // Ottieni i dati dagli articoli passati dal tuo controller Flask
+        var datiArticoli = {
+        {
+            result | tojson | safe
+        }
+    }
+        ; // Ottieni i dati dagli articoli passati dal tuo controller Flask
 
         // Mostra il canvas del grafico
         var canvas = document.getElementById("grafico");
         canvas.style.display = "block";
+
+        // Imposta le dimensioni desiderate del canvas
+        canvas.width = 200; // Imposta la larghezza desiderata
+        canvas.height = 100; // Imposta l'altezza desiderata
 
         // Crea il grafico a barre
         var ctx = canvas.getContext("2d");
@@ -157,23 +230,38 @@
                     data: datiArticoli.map(function (articolo) {
                         return articolo[2]; // Numero di citazioni
                     }),
-                    backgroundColor: "rgba(75, 192, 192, 0.2)",
-                    borderColor: "rgba(75, 192, 192, 1)",
+                    backgroundColor: "#000000",
+                    borderColor: "#000000",
                     borderWidth: 1
                 }]
             },
             options: {
                 scales: {
+                    x: {
+                        display: false
+                    },
                     y: {
                         beginAtZero: true
+                    }
+                },
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 10,
+                        top: 0,
+                        bottom: 0
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
                     }
                 }
             }
         });
     }
 </script>
-
-
 
 </body>
 </html>
