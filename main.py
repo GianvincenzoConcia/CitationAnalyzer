@@ -12,88 +12,80 @@ app.secret_key = 'segreto'
 
 SCOPUS_API_KEY = "ce1da58cc35b89014c26ff7de31cca85"
 
-# La funzione ricerca la conferenza su DBLP e filtra per anno
-def get_article_titles(conference_title, conference_year):
-    # Utilizza Selenium per navigare su DBLP e ottenere il contenuto della pagina
+# Inizializza un'istanza del driver Chrome con opzione headless
+def init_driver():
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
-    driver = webdriver.Chrome(options=options)
+    return webdriver.Chrome(options=options)
 
+
+# Cerca una conferenza su DBLP utilizzando Selenium
+# Restituisce il contenuto della pagina della conferenza
+def search_conference(conference_title, driver):
     try:
         search_url = f"https://dblp.org/search?q={conference_title}"
         driver.get(search_url)
-        try:
-            # Utilizza Selenium per navigare alla pagina della conferenza e ottenere il contenuto della pagina
-            first_result = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, 'result-list')))
-            first_result.click()
-        except TimeoutException:
-            flash(f"Conferenza {conference_title} non trovata", "error")
-            return None
 
-        # Ottieni il contenuto della pagina
-        page_content = driver.page_source
+        first_result = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'result-list')))
+        first_result.click()
 
-        # Utilizza Beautiful Soup per analizzare il contenuto HTML
-        soup = BeautifulSoup(page_content, 'html.parser')
-
-        year_element = soup.find('span', {'itemprop': 'datePublished'},
-                                 string=lambda text: str(conference_year) in text)
-
-        if year_element:
-
-            # Attende il caricamento della pagina
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@class="title"]')))
-
-            # Trova il link contents dell'anno scelto
-            contents_line = year_element.find_next('a', {'class': 'toc-link'})
-
-            if contents_line:
-
-                # Accede a contents
-                driver.get(contents_line['href'])
-
-                # Attendere che la pagina successiva si carichi completamente
-                WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, '//*[@class="title"]')))
-
-                # Ottenere il nuovo HTML dopo il clic
-                new_page_source = driver.page_source
-
-                # Utilizza BeautifulSoup per analizzare il nuovo HTML
-                soup = BeautifulSoup(new_page_source, 'html.parser')
-
-                block_elements = soup.find_all("cite", attrs={"class": "data tts-content"})
-
-                article_titles_list = []
-                article_data_list = []
-
-                for i in range(1, len(block_elements)):
-                    authors = block_elements[i].find_all("span", attrs={"itemprop": "author"})
-                    author_list = [author.find("span", attrs={"itemprop": "name"}).text.strip() for author in authors]
-                    article_title = block_elements[i].find("span", attrs={"class": "title"}).text.strip()
-                    numero_citazioni = get_citations(article_title)
-
-                    article_titles_list.append(article_title)
-                    article_data_list.append((article_title, author_list, int(numero_citazioni)))
-                    article_data_list.sort(reverse=True, key=lambda x: x[2])
-
-                return article_data_list
-
-                # Trova i titoli degli articoli utilizzando Beautiful Soup
-                # article_titles = [title.text.strip() for title in soup.find_all('span', class_='title')]
-            else:
-                flash("Nessun articolo trovato", 'error')
-                return None
-        else:
-            flash(f"Anno della conferenza {conference_year} non trovato.", 'error')
-            return None
-    except Exception as e:
-        flash("Si è verificato un errore: " + str(e), 'error')
+        return driver.page_source
+    except TimeoutException:
+        flash(f"Conferenza {conference_title} non trovata", "error")
         return None
-    finally:
-        driver.quit()
 
 
+# Trova l'anno della conferenza
+# Restituisce l'elemento dell'anno o None se non trovato
+def get_year_element(soup, conference_year):
+    year_element = soup.find('span', {'itemprop': 'datePublished'},
+                             string=lambda text: str(conference_year) in text)
+
+    if not year_element:
+        flash(f"Anno della conferenza {conference_year} non trovato.", 'error')
+        return None
+
+    return year_element
+
+
+# Entra nella pagina contents della conferenza che contiene gli articoli citati
+# Restituisce il contenuto della pagina contents
+def get_contents_link(year_element, driver):
+    contents_line = year_element.find_next('a', {'class': 'toc-link'})
+    if contents_line:
+        try:
+            driver.get(contents_line['href'])
+            return driver.page_source
+        except TimeoutException:
+            flash("Timeout durante il caricamento della pagina dei contenuti", 'error')
+            return None
+    else:
+        flash("Nessun articolo trovato", 'error')
+        return None
+
+
+def get_block_elements(page_source):
+    soup = BeautifulSoup(page_source, 'html.parser')
+    return soup.find_all("cite", attrs={"class": "data tts-content"})
+
+
+# Restituisce i dati degli articoli con titolo, autori e numero di citazioni in ordine di numero
+def get_article_data_list(block_elements):
+    article_data_list = []
+
+    for i in range(1, len(block_elements)):
+        authors = block_elements[i].find_all("span", attrs={"itemprop": "author"})
+        author_list = [author.find("span", attrs={"itemprop": "name"}).text.strip() for author in authors]
+        article_title = block_elements[i].find("span", attrs={"class": "title"}).text.strip()
+        numero_citazioni = get_citations(article_title)
+
+        article_data_list.append((article_title, author_list, int(numero_citazioni)))
+
+    article_data_list.sort(reverse=True, key=lambda x: x[2])
+    return article_data_list
+
+# Ottiene il numero di citazioni da Scopus per un determinato titolo dell'articolo.
 def get_citations(article_title):
     try:
         # Esegui una ricerca su Scopus utilizzando la chiave API
@@ -125,13 +117,27 @@ def search():
         conference_title = request.form['conference_title']
         conference_year = request.form['conference_year']
 
-        # Ottieni i titoli degli articoli utilizzando Selenium e Beautiful Soup
-        article_titles = get_article_titles(conference_title, conference_year)
+        driver = init_driver()
 
-        if article_titles is not None:
-            return render_template('interfaccia_web.html', result=article_titles)
-        else:
+        try:
+            page_source = search_conference(conference_title, driver)
+
+            if page_source is not None:
+                soup = BeautifulSoup(page_source, 'html.parser')
+                year_element = get_year_element(soup, conference_year)
+
+                if year_element is not None:
+                    contents_page_source = get_contents_link(year_element, driver)
+
+                    if contents_page_source is not None:
+                        block_elements = get_block_elements(contents_page_source)
+                        article_titles = get_article_data_list(block_elements)
+
+                        if article_titles is not None:
+                            return render_template('interfaccia_web.html', result=article_titles)
             return redirect(url_for('index'))
+        finally:
+            driver.quit()
 
 
 # Avvio applicazione Flask usando il server web Waitress
