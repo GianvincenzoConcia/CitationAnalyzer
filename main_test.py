@@ -1,10 +1,9 @@
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from bs4 import BeautifulSoup
 
-from main import app, search_conference, get_year_element, get_contents_link, get_block_elements, get_article_data_list, \
-    get_citations
+from main import app, search_conference, get_year_element, get_contents_link, get_block_elements, get_article_data_list
 
 
 class TestWebApp(unittest.TestCase):
@@ -14,6 +13,22 @@ class TestWebApp(unittest.TestCase):
         app.config['TESTING'] = True
         app.config['WTF_CSRF_ENABLED'] = False
         self.app = app.test_client()
+        self.soup_mock = MagicMock()
+        self.page_source = """
+                    <html>
+                        <body>
+                            <cite class="data tts-content">
+                                <span itemprop="author"><span itemprop="name">Author 1</span></span>
+                                <span class="title">Article 1</span>
+                            </cite>
+                            <cite class="data tts-content">
+                                <span itemprop="author"><span itemprop="name">Author 1</span></span>
+                                <span itemprop="author"><span itemprop="name">Author 2</span></span>
+                                <span class="title">Titolo esempio</span>
+                            </cite>
+                        </body>
+                    </html>
+                """
 
     def test_index_route(self):
         # Testa la rotta index
@@ -60,34 +75,35 @@ class TestWebApp(unittest.TestCase):
         self.assertIsNotNone(block_elements)
         self.assertEqual(len(block_elements), 1)
 
+
+    @patch('main.BeautifulSoup')
+    def test_get_block_elements(self, mock_beautifulsoup):
+        # Configurare il mock di BeautifulSoup per restituire un risultato predefinito
+        mock_beautifulsoup.return_value = self.soup_mock
+        self.soup_mock.find_all.return_value = ['elemento1', 'elemento2']  # Puoi sostituire con i tuoi dati di esempio
+
+        # Chiamare la funzione da testare
+        result = get_block_elements('pagina_html_di_test')
+
+        # Verificare che la funzione restituisca il risultato atteso
+        self.assertEqual(result, ['elemento1', 'elemento2'])
+
     def test_get_article_data_list(self):
-        # Testa la funzione get_article_data_list
-        block_elements = [
-            MagicMock(find_all=lambda *args, **kwargs: [
-                MagicMock(find=lambda *args, **kwargs: BeautifulSoup('<span itemprop="author">Author 1</span>',
-                                                                     'html.parser')),
-                MagicMock(find=lambda *args, **kwargs: BeautifulSoup('<span class="title">Article Title</span>',
-                                                                     'html.parser')),
-            ]),
-        ]
-
+        block_elements = get_block_elements(self.page_source)
         result = get_article_data_list(block_elements)
-        self.assertIsNotNone(result)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0][0], 'Article Title')
-        self.assertEqual(result[0][1], ['Author 1'])
 
-    # def test_get_citations(self):
-    #     # Testa la funzione get_citations
-    #     article_title = 'TestArticle'
-    #     with requests_mock.Mocker() as m:
-    #         # Configura il mock per rispondere alle richieste di Scopus
-    #         m.get(f'https://api.elsevier.com/content/search/scopus?query=TITLE("{article_title}")&apiKey=ce1da58cc35b89014c26ff7de31cca85',
-    #               json={'search-results': {'entry': [{'citedby-count': 5}]}})
-    #         result = get_citations(article_title)
-    #         self.assertEqual(result, 5)
+        # Assicurati che il risultato sia una lista non vuota
+        self.assertTrue(result)
 
-# ... (altro codice)
+        # Assicurati che il risultato sia una lista di tuple
+        self.assertTrue(all(isinstance(item, tuple) for item in result))
+
+        # Assicurati che ogni tupla abbia tre elementi
+        self.assertTrue(all(len(item) == 3 for item in result))
+
+        # Verifica la presenza della tupla desiderata con due autori
+        expected_tuple = ("Titolo esempio", ["Author 1", "Author 2"], 0)
+        self.assertIn(expected_tuple, result)
 
 
 if __name__ == '__main__':
