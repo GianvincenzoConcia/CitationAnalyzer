@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ProgettoIngSoft.iml" filepath="$PROJECT_DIR$/.idea/ProgettoIngSoft.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/CitationAnalyzer.iml" filepath="$PROJECT_DIR$/.idea/CitationAnalyzer.iml" />
     </modules>
   </component>
 </project>
