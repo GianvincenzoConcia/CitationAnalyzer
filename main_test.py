@@ -1,9 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from bs4 import BeautifulSoup
-
-from main import app, search_conference, get_year_element, get_contents_link, get_block_elements, get_article_data_list
+from main import app, search_conference, get_year_element, get_contents_link, get_block_elements, get_article_data_list, \
+    get_citations, SCOPUS_API_KEY
 
 
 class TestWebApp(unittest.TestCase):
@@ -30,15 +29,24 @@ class TestWebApp(unittest.TestCase):
                     </html>
                 """
 
-    def test_index_route(self):
+    @patch('main.requests.get')
+    def test_index_route(self, mock_get):
+        # Configura il mock per simulare una risposta HTTP fittizia
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.text = "Contenuto della pagina"
+
         # Testa la rotta index
-        response = self.app.get('/')
+        response = app.test_client().get('/')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Ricerca conferenza su DBLP', response.data)
 
-    def test_search_route(self):
+    @patch('main.requests.post')
+    def test_search_route(self, mock_post):
+        # Configura il mock per simulare una risposta HTTP fittizia
+        mock_post.return_value.status_code = 302
+
         # Testa la rotta di ricerca
-        response = self.app.post('/search', data={'conference_title': 'TestConf', 'conference_year': '2022'})
+        response = app.test_client().post('/search', data={'conference_title': 'TestConf', 'conference_year': '2022'})
         self.assertEqual(response.status_code, 302)  # Redirect dopo la ricerca
 
     def test_search_conference(self):
@@ -80,7 +88,7 @@ class TestWebApp(unittest.TestCase):
     def test_get_block_elements(self, mock_beautifulsoup):
         # Configurare il mock di BeautifulSoup per restituire un risultato predefinito
         mock_beautifulsoup.return_value = self.soup_mock
-        self.soup_mock.find_all.return_value = ['elemento1', 'elemento2']  # Puoi sostituire con i tuoi dati di esempio
+        self.soup_mock.find_all.return_value = ['elemento1', 'elemento2']
 
         # Chiamare la funzione da testare
         result = get_block_elements('pagina_html_di_test')
@@ -104,6 +112,39 @@ class TestWebApp(unittest.TestCase):
         # Verifica la presenza della tupla desiderata con due autori
         expected_tuple = ("Titolo esempio", ["Author 1", "Author 2"], 0)
         self.assertIn(expected_tuple, result)
+
+    @patch('main.requests.get')
+    def test_get_citations(self, mock_get):
+        # Configura il mock per restituire una risposta simulata
+        mock_response = {
+            'search-results': {
+                'entry': [{'citedby-count': 10}]
+            }
+        }
+        mock_get.return_value.json.return_value = mock_response
+
+        # Chiama la funzione con un titolo fittizio
+        article_title = "Titolo di esempio"
+        result = get_citations(article_title)
+
+        # Assicurati che la chiamata API sia avvenuta con l'URL atteso
+        expected_url = f'https://api.elsevier.com/content/search/scopus?query=TITLE("{article_title}")&apiKey={SCOPUS_API_KEY}'
+        mock_get.assert_called_once_with(expected_url)
+
+        # Assicurati che il risultato sia il numero di citazioni simulato
+        self.assertEqual(result, 10)
+
+    @patch('main.requests.get')
+    def test_get_citations_error(self, mock_get):
+        # Configura il mock per simulare un'eccezione durante la chiamata API
+        mock_get.side_effect = Exception("Errore di rete")
+
+        # Chiama la funzione con un titolo fittizio
+        article_title = "Titolo di esempio"
+        result = get_citations(article_title)
+
+        # Assicurati che la funzione restituisca 0 in caso di errore
+        self.assertEqual(result, 0)
 
 
 if __name__ == '__main__':
