@@ -11,6 +11,7 @@ app = Flask(__name__, template_folder='templates')
 
 SCOPUS_API_KEY = "ce1da58cc35b89014c26ff7de31cca85"
 
+
 # Inizializza un'istanza del driver Chrome con opzione headless
 def init_driver():
     options = webdriver.ChromeOptions()
@@ -84,6 +85,7 @@ def get_article_data_list(block_elements):
     article_data_list.sort(reverse=True, key=lambda x: x[2])
     return article_data_list
 
+
 # Ottiene il numero di citazioni da Scopus per un determinato titolo dell'articolo.
 def get_citations(article_title):
     try:
@@ -103,19 +105,24 @@ def get_citations(article_title):
         return 0
 
 
-
 @app.route('/')
 def index():
     return render_template('interfaccia_web.html', result=None)
 
 
 # Pagina iniziale con il form di ricerca per la conferenza specifica
-@app.route('/search', methods=['POST'])
-def search():
-    if request.method == 'POST':
-        conference_title = request.form['conference_title']
-        conference_year = request.form['conference_year']
 
+@app.route('/search_classifica', methods=['GET'])
+def show_classifica():
+    return render_template('classifica.html', result=None)
+
+
+@app.route('/classifica', methods=['POST'])
+def handle_classifica():
+    conference_title = request.form.get('conference_title')
+    conference_year = request.form.get('conference_year')
+
+    if conference_title and conference_year:
         driver = init_driver()
 
         try:
@@ -133,10 +140,12 @@ def search():
                         article_titles = get_article_data_list(block_elements)
 
                         if article_titles is not None:
-                            return render_template('interfaccia_web.html', result=article_titles)
-            return redirect(url_for('index'))
+                            return render_template('classifica.html', result=article_titles)
         finally:
             driver.quit()
+
+    # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale
+    return redirect(url_for('show_classifica'))
 
 
 # Avvio applicazione Flask usando il server web Waitress

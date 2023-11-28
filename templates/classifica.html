@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Articoli più citati</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1em;
+            margin-bottom: 0;
+        }
+
+        form {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .select-container {
+            text-align: center;
+        }
+
+
+        select {
+            width: 45%;
+            padding: 8px;
+            box-sizing: border-box;
+            background-color: #4caf50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            display: block;
+            margin: auto;
+            text-align-last: center;
+        }
+
+        select:hover {
+            background-color: #45a049;
+        }
+
+        #classifica-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 8px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 8px;
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+
+</head>
+
+<body>
+    <h1>CITATION ANALYZER</h1>
+
+    <div id="input-container">
+        <form action="/classifica" method="post">
+            <label for="conference_title">Inserire il titolo della conferenza:</label>
+            <input type="text" name="conference_title" required>
+
+            <label for="conference_year">Inserire l'anno:</label>
+            <input type="text" name="conference_year" required>
+
+            <input type="submit" value="Cerca">
+        </form>
+    </div>
+
+    <div class="select-container">
+        <select id="selectOption" onchange="showOption()">
+            <option value="seleziona" selected>Seleziona un'opzione</option>
+            <option value="classifica">Classifica</option>
+            <option value="grafico">Grafico</option>
+        </select>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="text-align: center; color: red;">
+            <ul>
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div id="classifica-container" style="display: none;">
+        {% if result %}
+        <ul style="padding-left: 0;">
+            <li style="display: flex; align-items: baseline;">
+                <div style="flex: 1; border-right: 1px solid #ccc; padding-right: 10px;">
+                    <strong>Risultati</strong>
+                </div>
+                <div style="flex: 1; text-align: right;">
+                    <strong>Citazioni</strong>
+                </div>
+            </li>
+
+            {% for title, author, citations in result %}
+            <li style="display: flex; align-items: baseline;">
+                <div style="flex: 1; border-right: 1px solid #ccc; padding-right: 10px;">
+                    <strong>Titolo: </strong> {{ title }}<br>
+                    <strong>Autore/i: </strong> {{ author|join(", ") }}<br>
+                </div>
+                <div style="flex: 1; text-align: right;">
+                    {{ citations }}<br>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+
+    </div>
+
+    <!-- Contenuto del "Grafico" -->
+    <div id="grafico-container" style="display: none;">
+        <canvas id="grafico"></canvas>
+    </div>
+
+
+    <script>
+
+        function showOption() {
+            var selectElement = document.getElementById("selectOption");
+            var classificaContainer = document.getElementById("classifica-container");
+            var graficoContainer = document.getElementById("grafico-container");
+
+            if (selectElement.value === "classifica") {
+                classificaContainer.style.display = "block";
+                graficoContainer.style.display = "none";
+            } else if (selectElement.value === "grafico") {
+                classificaContainer.style.display = "none";
+                graficoContainer.style.display = "block";
+                visualizzaGrafico();
+            }
+        }
+
+        function visualizzaGrafico() {
+            var datiArticoli = {{ result|tojson | safe }};
+
+            // Mostra il canvas del grafico
+            var canvas = document.getElementById("grafico");
+            canvas.style.display = "block";
+
+            // Imposta le dimensioni desiderate del canvas
+            canvas.width = 200; // Imposta la larghezza desiderata
+            canvas.height = 100; // Imposta l'altezza desiderata
+
+            // Crea il grafico a barre
+            var ctx = canvas.getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: datiArticoli.map(function (articolo) {
+                        return articolo[0]; // Titolo dell'articolo
+                    }),
+                    datasets: [{
+                        label: "Numero di citazioni",
+                        data: datiArticoli.map(function (articolo) {
+                            return articolo[2]; // Numero di citazioni
+                        }),
+                        backgroundColor: "#000000",
+                        borderColor: "#000000",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            display: false
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 10,
+                            top: 0,
+                            bottom: 0
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
