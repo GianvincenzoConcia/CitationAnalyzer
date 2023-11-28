@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, url_for
+
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -6,8 +7,6 @@ from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
-app = Flask(__name__, template_folder='templates')
 
 SCOPUS_API_KEY = "ce1da58cc35b89014c26ff7de31cca85"
 
@@ -105,51 +104,36 @@ def get_citations(article_title):
         return 0
 
 
-@app.route('/')
-def index():
-    return render_template('interfaccia_web.html', result=None)
+def setup_classifica_routes(app):
+    @app.route('/search_classifica', methods=['GET'])
+    def show_classifica():
+        return render_template('classifica.html', result=None)
 
+    @app.route('/classifica', methods=['POST'])
+    def handle_classifica():
+        conference_title = request.form.get('conference_title')
+        conference_year = request.form.get('conference_year')
 
-# Pagina iniziale con il form di ricerca per la conferenza specifica
+        if conference_title and conference_year:
+            driver = init_driver()
 
-@app.route('/search_classifica', methods=['GET'])
-def show_classifica():
-    return render_template('classifica.html', result=None)
+            try:
+                page_source = search_conference(conference_title, driver)
 
+                if page_source is not None:
+                    soup = BeautifulSoup(page_source, 'html.parser')
+                    year_element = get_year_element(soup, conference_year)
 
-@app.route('/classifica', methods=['POST'])
-def handle_classifica():
-    conference_title = request.form.get('conference_title')
-    conference_year = request.form.get('conference_year')
+                    if year_element is not None:
+                        contents_page_source = get_contents_link(year_element, driver)
 
-    if conference_title and conference_year:
-        driver = init_driver()
+                        if contents_page_source is not None:
+                            block_elements = get_block_elements(contents_page_source)
+                            article_titles = get_article_data_list(block_elements)
 
-        try:
-            page_source = search_conference(conference_title, driver)
-
-            if page_source is not None:
-                soup = BeautifulSoup(page_source, 'html.parser')
-                year_element = get_year_element(soup, conference_year)
-
-                if year_element is not None:
-                    contents_page_source = get_contents_link(year_element, driver)
-
-                    if contents_page_source is not None:
-                        block_elements = get_block_elements(contents_page_source)
-                        article_titles = get_article_data_list(block_elements)
-
-                        if article_titles is not None:
-                            return render_template('classifica.html', result=article_titles)
-        finally:
-            driver.quit()
-
-    # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale
-    return redirect(url_for('show_classifica'))
-
-
-# Avvio applicazione Flask usando il server web Waitress
-if __name__ == '__main__':
-    from waitress import serve
-
-    serve(app, host="0.0.0.0", port=8080)
+                            if article_titles is not None:
+                                return render_template('classifica.html', result=article_titles)
+            finally:
+                driver.quit()
+        # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale
+        return redirect(url_for('show_classifica'))

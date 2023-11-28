@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from main import app, search_conference, get_year_element, get_contents_link, get_block_elements, get_article_data_list, \
+from app import app, search_conference, get_year_element, get_contents_link, get_block_elements, get_article_data_list, \
     get_citations, SCOPUS_API_KEY
 
 
