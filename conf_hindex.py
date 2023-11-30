@@ -1,0 +1,136 @@
+from flask import render_template, request, flash, redirect, url_for
+
+import requests
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.common import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from ranking_articles import get_block_elements, get_citations
+
+SCOPUS_API_KEY = "ce1da58cc35b89014c26ff7de31cca85"
+
+
+# Inizializza un'istanza del driver Chrome con opzione headless
+def init_driver():
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    return webdriver.Chrome(options=options)
+
+
+# Cerca una conferenza su DBLP utilizzando Selenium
+# Restituisce il contenuto della pagina della conferenza
+def search_year(conference_year, driver):
+    try:
+        search_url = f"https://dblp.org/search?q=type%3AEditorship%3A%20year%3A{conference_year}%3A"
+        driver.get(search_url)
+        page_conferences = driver.page_source
+        return page_conferences
+    except TimeoutException:
+        flash(f"Anno {conference_year} non trovato", "error")
+        return None
+
+
+def get_conference_title(page_conferences):
+    soup = BeautifulSoup(page_conferences, 'html.parser')
+    block_conf = soup.find_all("cite", attrs={'class': 'data tts-content'})[:10]
+    conf_title_list = []
+    for i in block_conf:
+        title = i.find("span", attrs={"class": "title"})
+        contents_line = i.find("a", {'class': 'toc-link'})
+        conf_title_list.append((title, contents_line))
+    return conf_title_list
+
+
+# def contents_link(conft, driver):
+#     soup = BeautifulSoup(page_conferences, 'html.parser')
+#     contents_line = soup.find("a", {'class': 'toc-link'})
+#     driver.get(contents_line['href'])
+#     return driver.page_source
+
+
+def get_conference_hindex(block_elements):
+    num_citazioni_list = []
+    for i in block_elements:
+        article_title = i.find("span", attrs={"class": "title"}).text.strip()
+        numero_citazioni = get_citations(article_title)
+        num_citazioni_list.append(int(numero_citazioni))
+    num_citazioni_list.sort(reverse=True)
+    hindex = calcola_h_index(num_citazioni_list)
+    return hindex
+
+def calcola_h_index(citazioni_per_articolo):
+    citazioni_per_articolo.sort(reverse=True)
+    h_index = 0
+    for i, citazione in enumerate(citazioni_per_articolo, start=1):
+        if i <= citazione:
+            h_index = i
+        else:
+            break
+    return h_index
+
+
+def all_conference_index(driver, conference_year):
+    conferences_list = []
+
+    # Cerca le conferenze per l'anno specificato
+    page_conferences = search_year(conference_year, driver)
+
+    if page_conferences:
+        # Ottieni i titoli delle conferenze
+        conference_titles = get_conference_title(page_conferences)
+        print()
+
+        # Calcola l'h-index per ogni conferenza
+        for title in conference_titles:
+            # Aggiungi il titolo alla lista
+            conference_name = title[0].text.strip()
+
+            driver.get((title[1])['href'])
+
+            conference_page = driver.page_source
+
+            # Recupera la pagina della conferenza
+       #     conference_page = contents_link(page_conferences, driver)
+
+            # Ottieni gli elementi del blocco della conferenza
+            block_elements = get_block_elements(conference_page)
+
+            # Calcola l'h-index e aggiungi alla lista
+            h_index = get_conference_hindex(block_elements)
+            conferences_list.append((conference_name, int(h_index)))
+    #        print(f"{conference_name}, h-index: {h_index}")
+
+            driver.back()
+        conferences_list.sort(reverse=True, key=lambda x: x[1])
+        return conferences_list
+
+
+def setup_hindex_routes(app):
+    @app.route('/search_hindex', methods=['GET'])
+    def show_hindex():
+        return render_template('h_index.html', result=None)
+
+    @app.route('/h_index', methods=['POST'])
+    def handle_classifica():
+        conference_year = request.form.get('conference_year')
+
+        if conference_year:
+            driver = init_driver()
+
+            try:
+                conferences_list = all_conference_index(driver,conference_year)
+                if conferences_list is not None:
+                    return render_template('h_index.html', result=conferences_list)
+            finally:
+                driver.quit()
+        # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale
+        return redirect(url_for('show_hìndex'))
+
+
+
+driver = init_driver()
+
+all_conference_index(driver, 2023)
+
