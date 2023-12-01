@@ -60,6 +60,7 @@ def get_conference_hindex(block_elements):
     hindex = calcola_h_index(num_citazioni_list)
     return hindex
 
+
 def calcola_h_index(citazioni_per_articolo):
     citazioni_per_articolo.sort(reverse=True)
     h_index = 0
@@ -92,7 +93,7 @@ def all_conference_index(driver, conference_year):
             conference_page = driver.page_source
 
             # Recupera la pagina della conferenza
-       #     conference_page = contents_link(page_conferences, driver)
+            #     conference_page = contents_link(page_conferences, driver)
 
             # Ottieni gli elementi del blocco della conferenza
             block_elements = get_block_elements(conference_page)
@@ -100,7 +101,7 @@ def all_conference_index(driver, conference_year):
             # Calcola l'h-index e aggiungi alla lista
             h_index = get_conference_hindex(block_elements)
             conferences_list.append((conference_name, int(h_index)))
-    #        print(f"{conference_name}, h-index: {h_index}")
+            #        print(f"{conference_name}, h-index: {h_index}")
 
             driver.back()
         conferences_list.sort(reverse=True, key=lambda x: x[1])
@@ -113,24 +114,21 @@ def setup_hindex_routes(app):
         return render_template('h_index.html', result=None)
 
     @app.route('/h_index', methods=['POST'])
-    def handle_classifica():
+    def handle_hindex():
         conference_year = request.form.get('conference_year')
 
         if conference_year:
             driver = init_driver()
 
             try:
-                conferences_list = all_conference_index(driver,conference_year)
+                conferences_list = all_conference_index(driver, conference_year)
                 if conferences_list is not None:
                     return render_template('h_index.html', result=conferences_list)
             finally:
                 driver.quit()
         # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale
-        return redirect(url_for('show_hìndex'))
+        return redirect(url_for('show_hindex'))
 
-
-
-driver = init_driver()
-
-all_conference_index(driver, 2023)
-
+# driver = init_driver()
+#
+# all_conference_index(driver, 2023)
