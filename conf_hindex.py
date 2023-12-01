@@ -7,7 +7,7 @@ from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from ranking_articles import get_block_elements, get_citations
+from ranking_articles import get_block_elements, get_citations, get_year_element, search_conference, get_contents_link
 
 SCOPUS_API_KEY = "ce1da58cc35b89014c26ff7de31cca85"
 
@@ -50,15 +50,22 @@ def get_conference_title(page_conferences):
 #     return driver.page_source
 
 
-def get_conference_hindex(block_elements):
+def get_conference_hindex(block_elements_list):
     num_citazioni_list = []
-    for i in block_elements:
-        article_title = i.find("span", attrs={"class": "title"}).text.strip()
-        numero_citazioni = get_citations(article_title)
-        num_citazioni_list.append(int(numero_citazioni))
+
+    for block_elements in block_elements_list:
+        for i in block_elements:
+            # Itera sugli elementi invece di chiamare find_all
+            for title_element in i.find_all("span", attrs={"class": "title"}):
+                article_title = title_element.text.strip()
+                numero_citazioni = get_citations(article_title)
+                num_citazioni_list.append(int(numero_citazioni))
+
     num_citazioni_list.sort(reverse=True)
     hindex = calcola_h_index(num_citazioni_list)
+
     return hindex
+
 
 
 def calcola_h_index(citazioni_per_articolo):
@@ -72,40 +79,64 @@ def calcola_h_index(citazioni_per_articolo):
     return h_index
 
 
-def all_conference_index(driver, conference_year):
+def all_conference_index(driver, start_year, end_year, conference_titles):
     conferences_list = []
 
-    # Cerca le conferenze per l'anno specificato
-    page_conferences = search_year(conference_year, driver)
+    for conference_title in conference_titles:
+        block_element_list = []
+        # Cerca le conferenze per l'anno specificato
+        page_conference = search_conference(conference_title, driver)
 
-    if page_conferences:
-        # Ottieni i titoli delle conferenze
-        conference_titles = get_conference_title(page_conferences)
-        print()
+        if page_conference:
+            for conference_year in range(int(start_year), int(end_year) + 1):
+                soup = BeautifulSoup(page_conference, "html.parser")
+                # Ottieni i titoli delle conferenze
+                year_element = get_year_element(soup, conference_year)
 
-        # Calcola l'h-index per ogni conferenza
-        for title in conference_titles:
-            # Aggiungi il titolo alla lista
-            conference_name = title[0].text.strip()
+                if year_element is not None:
+                    contents_page_source = get_contents_link(year_element, driver)
 
-            driver.get((title[1])['href'])
+                    if contents_page_source is not None:
+                        block_elements = get_block_elements(contents_page_source)
+                        # h_index = get_conference_hindex(block_elements)
+                        block_element_list.append(block_elements)
+                     #   conferences_list.append((conference_title, block_element_list))
 
-            conference_page = driver.page_source
+        conf_index = get_conference_hindex(block_element_list)
+        conferences_list.append((conference_title, conf_index))
+    return conferences_list
+    #(conferences_list)
+    # conference_hindex = []
+    # #
+    # h_index = get_conference_hindex(list(conferences_list[1]))
+    # conference_hindex.append((conferences_list[0], int(h_index)))
+    # print(conference_hindex)
+    # conference_hindex.sort(reverse=True, key=lambda x: x[1])
 
-            # Recupera la pagina della conferenza
-            #     conference_page = contents_link(page_conferences, driver)
 
-            # Ottieni gli elementi del blocco della conferenza
-            block_elements = get_block_elements(conference_page)
-
-            # Calcola l'h-index e aggiungi alla lista
-            h_index = get_conference_hindex(block_elements)
-            conferences_list.append((conference_name, int(h_index)))
-            #        print(f"{conference_name}, h-index: {h_index}")
-
-            driver.back()
-        conferences_list.sort(reverse=True, key=lambda x: x[1])
-        return conferences_list
+            # # Calcola l'h-index per ogni conferenza
+            # for title in conference_titles:
+            #     # Aggiungi il titolo alla lista
+            #     conference_name = title[0].text.strip()
+            #
+            #     driver.get((title[1])['href'])
+            #
+            #     conference_page = driver.page_source
+            #
+            #     # Recupera la pagina della conferenza
+            #     #     conference_page = contents_link(page_conferences, driver)
+            #
+            #     # Ottieni gli elementi del blocco della conferenza
+            #     block_elements = get_block_elements(conference_page)
+            #
+            #     # Calcola l'h-index e aggiungi alla lista
+            #     h_index = get_conference_hindex(block_elements)
+            #     conferences_list.append((conference_name, int(h_index)))
+            #     #        print(f"{conference_name}, h-index: {h_index}")
+            #
+            #     driver.back()
+            # conferences_list.sort(reverse=True, key=lambda x: x[1])
+            # return conferences_list
 
 
 def setup_hindex_routes(app):
@@ -115,20 +146,23 @@ def setup_hindex_routes(app):
 
     @app.route('/h_index', methods=['POST'])
     def handle_hindex():
-        conference_year = request.form.get('conference_year')
+        start_year = request.form.get('start_year')
+        end_year = request.form.get('end_year')
+        conference_list = request.form.getlist('conference_list')
 
-        if conference_year:
+        if start_year and end_year and conference_list:
             driver = init_driver()
 
             try:
-                conferences_list = all_conference_index(driver, conference_year)
+                conferences_list = all_conference_index(driver, start_year, end_year, conference_list)
                 if conferences_list is not None:
                     return render_template('h_index.html', result=conferences_list)
             finally:
                 driver.quit()
-        # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale
+    # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale
         return redirect(url_for('show_hindex'))
+
 
 # driver = init_driver()
 #
-# all_conference_index(driver, 2023)
+# all_conference_index(driver, 2021, 2023, ["International Conference on Automated Software Engineering"])
