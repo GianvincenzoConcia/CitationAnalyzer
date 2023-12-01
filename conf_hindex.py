@@ -15,30 +15,6 @@ def init_driver():
     return webdriver.Chrome(options=options)
 
 
-# Cerca una conferenza su DBLP utilizzando Selenium
-# Restituisce il contenuto della pagina della conferenza
-def search_year(conference_year, driver):
-    try:
-        search_url = f"https://dblp.org/search?q=type%3AEditorship%3A%20year%3A{conference_year}%3A"
-        driver.get(search_url)
-        page_conferences = driver.page_source
-        return page_conferences
-    except TimeoutException:
-        flash(f"Anno {conference_year} non trovato", "error")
-        return None
-
-
-def get_conference_title(page_conferences):
-    soup = BeautifulSoup(page_conferences, 'html.parser')
-    block_conf = soup.find_all("cite", attrs={'class': 'data tts-content'})[:10]
-    conf_title_list = []
-    for i in block_conf:
-        title = i.find("span", attrs={"class": "title"})
-        contents_line = i.find("a", {'class': 'toc-link'})
-        conf_title_list.append((title, contents_line))
-    return conf_title_list
-
-
 def get_conference_hindex(block_elements_list):
     num_citazioni_list = []
 
@@ -54,7 +30,6 @@ def get_conference_hindex(block_elements_list):
     hindex = calcola_h_index(num_citazioni_list)
 
     return hindex
-
 
 
 def calcola_h_index(citazioni_per_articolo):
@@ -89,7 +64,7 @@ def all_conference_index(driver, start_year, end_year, conference_titles):
                         block_elements = get_block_elements(contents_page_source)
                         # h_index = get_conference_hindex(block_elements)
                         block_element_list.append(block_elements)
-                     #   conferences_list.append((conference_title, block_element_list))
+                    #   conferences_list.append((conference_title, block_element_list))
 
         conf_index = get_conference_hindex(block_element_list)
         conferences_list.append((conference_title, conf_index))
@@ -116,5 +91,5 @@ def setup_hindex_routes(app):
                     return render_template('h_index.html', result=conferences_list)
             finally:
                 driver.quit()
-    # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale
+        # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale
         return redirect(url_for('show_hindex'))
