@@ -1,12 +1,8 @@
 from flask import render_template, request, flash, redirect, url_for
 
-import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common import TimeoutException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from ranking_articles import get_block_elements, get_citations, get_year_element, search_conference, get_contents_link
 
 SCOPUS_API_KEY = "ce1da58cc35b89014c26ff7de31cca85"
@@ -41,13 +37,6 @@ def get_conference_title(page_conferences):
         contents_line = i.find("a", {'class': 'toc-link'})
         conf_title_list.append((title, contents_line))
     return conf_title_list
-
-
-# def contents_link(conft, driver):
-#     soup = BeautifulSoup(page_conferences, 'html.parser')
-#     contents_line = soup.find("a", {'class': 'toc-link'})
-#     driver.get(contents_line['href'])
-#     return driver.page_source
 
 
 def get_conference_hindex(block_elements_list):
@@ -105,38 +94,6 @@ def all_conference_index(driver, start_year, end_year, conference_titles):
         conf_index = get_conference_hindex(block_element_list)
         conferences_list.append((conference_title, conf_index))
     return conferences_list
-    #(conferences_list)
-    # conference_hindex = []
-    # #
-    # h_index = get_conference_hindex(list(conferences_list[1]))
-    # conference_hindex.append((conferences_list[0], int(h_index)))
-    # print(conference_hindex)
-    # conference_hindex.sort(reverse=True, key=lambda x: x[1])
-
-
-            # # Calcola l'h-index per ogni conferenza
-            # for title in conference_titles:
-            #     # Aggiungi il titolo alla lista
-            #     conference_name = title[0].text.strip()
-            #
-            #     driver.get((title[1])['href'])
-            #
-            #     conference_page = driver.page_source
-            #
-            #     # Recupera la pagina della conferenza
-            #     #     conference_page = contents_link(page_conferences, driver)
-            #
-            #     # Ottieni gli elementi del blocco della conferenza
-            #     block_elements = get_block_elements(conference_page)
-            #
-            #     # Calcola l'h-index e aggiungi alla lista
-            #     h_index = get_conference_hindex(block_elements)
-            #     conferences_list.append((conference_name, int(h_index)))
-            #     #        print(f"{conference_name}, h-index: {h_index}")
-            #
-            #     driver.back()
-            # conferences_list.sort(reverse=True, key=lambda x: x[1])
-            # return conferences_list
 
 
 def setup_hindex_routes(app):
@@ -161,8 +118,3 @@ def setup_hindex_routes(app):
                 driver.quit()
     # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale
         return redirect(url_for('show_hindex'))
-
-
-# driver = init_driver()
-#
-# all_conference_index(driver, 2021, 2023, ["International Conference on Automated Software Engineering"])
