@@ -1,9 +1,8 @@
-from flask import render_template, request, flash, redirect, url_for
+from flask import render_template, request, redirect, url_for
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.common import TimeoutException
-from ranking_articles import get_block_elements, get_citations, get_year_element, search_conference, get_contents_link
+from ranking_articles import get_block_elements, get_citations, search_conference, get_contents_link
 
 SCOPUS_API_KEY = "ce1da58cc35b89014c26ff7de31cca85"
 
@@ -62,13 +61,17 @@ def all_conference_index(driver, start_year, end_year, conference_titles):
 
                     if contents_page_source is not None:
                         block_elements = get_block_elements(contents_page_source)
-                        # h_index = get_conference_hindex(block_elements)
                         block_element_list.append(block_elements)
-                    #   conferences_list.append((conference_title, block_element_list))
 
         conf_index = get_conference_hindex(block_element_list)
         conferences_list.append((conference_title, conf_index))
     return conferences_list
+
+
+def get_year_element(soup, conference_year):
+    year_element = soup.find('span', {'itemprop': 'datePublished'},
+                             string=lambda text: str(conference_year) in text)
+    return year_element
 
 
 def setup_hindex_routes(app):
