@@ -3,7 +3,7 @@ from flask import render_template, request, flash, redirect, url_for
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.common import TimeoutException
+from selenium.common import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -20,15 +20,24 @@ def init_driver():
 
 # Cerca una conferenza su DBLP utilizzando Selenium
 # Restituisce il contenuto della pagina della conferenza
+
 def search_conference(conference_title, driver):
     try:
         search_url = f"https://dblp.org/search?q={conference_title}"
         driver.get(search_url)
 
-        first_result = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'result-list')))
-        first_result.click()
-
+        try:
+            first_result = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'result-list')))
+            first_result.click()
+        except TimeoutException:
+            # If first_result is not present, check for the presence of toc-link
+            try:
+                driver.find_element(By.CLASS_NAME, 'toc-link')
+                return driver.page_source
+            except NoSuchElementException:
+                flash(f"Conferenza {conference_title} non trovata", "error")
+                return None
         return driver.page_source
     except TimeoutException:
         flash(f"Conferenza {conference_title} non trovata", "error")
