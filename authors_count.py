@@ -30,7 +30,6 @@ def count_authors(author_list):
     author_occurrences = {author: authors.count(author) for author in set(authors)}
 
     sorted_authors = sorted(author_occurrences.items(), key=lambda x: x[1], reverse=True)
-
     return sorted_authors
 
 
