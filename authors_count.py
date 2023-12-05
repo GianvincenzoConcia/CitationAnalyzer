@@ -54,23 +54,29 @@ def get_author_usage(driver, start_year, end_year, conference_title):
     return count_authors(author_list)
 
 
+def show_authcount():
+    return render_template('authcount.html', result=None)
+
+def handle_authcount():
+    conference_title = request.form.get('conference_title')
+    start_year = request.form.get('start_year')
+    end_year = request.form.get('end_year')
+
+    if conference_title and start_year and end_year:
+        driver = init_driver()
+        try:
+            authors_count = get_author_usage(driver, start_year, end_year, conference_title)
+            if authors_count is not None:
+                return render_template('authcount.html', result=authors_count)
+        finally:
+            driver.quit()
+    return redirect(url_for('show_authcount'))
+
 def setup_authcount_routes(app):
     @app.route('/search_authcount', methods=['GET'])
-    def show_authcount():
-        return render_template('authcount.html', result=None)
+    def show_authcount_route():
+        return show_authcount()
 
     @app.route('/authcount', methods=['POST'])
-    def handle_authcount():
-        conference_title = request.form.get('conference_title')
-        start_year = request.form.get('start_year')
-        end_year = request.form.get('end_year')
-
-        if conference_title and start_year and end_year:
-            driver = init_driver()
-            try:
-                authors_count = get_author_usage(driver, start_year, end_year, conference_title)
-                if authors_count is not None:
-                    return render_template('authcount.html', result=authors_count)
-            finally:
-                driver.quit()
-        return redirect(url_for('show_authcount'))
+    def handle_authcount_route():
+        return handle_authcount()
