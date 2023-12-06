@@ -46,19 +46,6 @@ def step_when_user_sees_authors_count(context):
     context.driver.quit()
 
 
-@step('l\'utente clicca sul menù "Seleziona Grafico"')
-def step_when_user_selects_chart(context):
-    button = WebDriverWait(context.driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'selectOption'))
-    )
-    button.click()
-    dropdown = Select(button)
-
-    # Seleziona l'opzione con value="classifica"
-    dropdown.select_by_value("grafico")
-    time.sleep(2)
-
-
 @then("l'utente visualizza il grafico degli autori")
 def step_when_user_sees_authors_chart(context):
     time.sleep(1)
