@@ -29,21 +29,21 @@ def step_when_select_classifica(context):
     time.sleep(2)
 
 
-@when('l\'utente inserisce "3D Data Processing Visualization and Transmission" come titolo della conferenza')
-def step_when_user_enters_conference_title(context):
+@when('l\'utente inserisce "(.*)" come titolo della conferenza')
+def step_when_user_enters_conference_title(context, conference_name):
     input_conference = WebDriverWait(context.driver, 10).until(
         EC.presence_of_element_located((By.NAME, 'conference_title'))
     )
-    input_conference.send_keys("3D Data Processing Visualization and Transmission")
+    input_conference.send_keys(conference_name)
     time.sleep(2)
 
 
-@step('l\'utente inserisce "2012" come anno')
-def step_when_user_enters_conference_year(context):
+@step('l\'utente inserisce "(\\d{4})" come anno')
+def step_when_user_enters_conference_year(context, year):
     input_conference = WebDriverWait(context.driver, 10).until(
         EC.presence_of_element_located((By.NAME, 'conference_year'))
     )
-    input_conference.send_keys("2012")
+    input_conference.send_keys(year)
     time.sleep(2)
 
 
