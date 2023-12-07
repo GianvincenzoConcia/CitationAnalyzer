@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from flask import render_template, request, redirect, url_for
+from conf_hindex import validate_years
 
 from ranking_articles import search_conference, get_year_element, get_contents_link, init_driver
 
@@ -63,11 +64,13 @@ def handle_authcount():
     end_year = request.form.get('end_year')
 
     if conference_title and start_year and end_year:
+        validate_years(start_year, end_year)
         driver = init_driver()
         try:
             authors_count = get_author_usage(driver, start_year, end_year, conference_title)
             if authors_count is not None:
-                return render_template('authcount.html', result=authors_count)
+                return render_template('authcount.html', result=authors_count,
+                                       conference_title=conference_title, start_year=start_year, end_year=end_year)
         finally:
             driver.quit()
     return redirect(url_for('show_authcount'))

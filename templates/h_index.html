@@ -114,14 +114,16 @@
         <form action="/h_index" method="post">
 
             <label for="start_year">Inserire l'anno di inizio:</label>
-            <input type="text" name="start_year" required>
+            <input type="text" name="start_year" required value="{{ start_year }}">
 
             <label for="end_year">Inserire l'anno di fine:</label>
-            <input type="text" name="end_year" required>
+            <input type="text" name="end_year" required value="{{ end_year }}">
 
-            <label for="conference_list">Inserire titolo conferenza: </label>
-             <div id="conference-inputs">
-                <input type="text" name="conference_list" required>
+            <label for="conference_list">Inserire i titoli delle conferenze: </label>
+            <div id="conference-inputs">
+                {% for conference in conference_list %}
+                    <input type="text" name="conference_list" required value="{{ conference }}">
+                {% endfor %}
             </div>
             <button type="button" onclick="addConferenceInput()" style="background-color: #333; color: white; padding: 10px 20px; font-size: 16px; cursor: pointer;
              border: none; border-radius: 4px; margin-top: 10px; margin-bottom: 10px; transition: background-color 0.3s;">Aggiungi conferenza</button><br>
@@ -257,6 +259,18 @@
             });
         }
 
+        document.addEventListener("DOMContentLoaded", function () {
+            // Verifica se ci sono messaggi di errore nel template Flask
+            var errorMessages = document.querySelectorAll('.error');
+            var isErrorPage = errorMessages.length > 0;
+
+            // Aggiungi le prime due barre vuote solo se non ci sono messaggi di errore
+            if (!isErrorPage) {
+                addConferenceInput();
+                addConferenceInput();
+            }
+        });
+
         function addConferenceInput() {
             var container = document.getElementById("conference-inputs");
             var input = document.createElement("input");
@@ -264,6 +278,7 @@
             input.name = "conference_list";
             container.appendChild(input);
         }
+
     </script>
 
 </body>

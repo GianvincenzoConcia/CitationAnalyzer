@@ -113,10 +113,10 @@
     <div id="input-container">
         <form action="/classifica" method="post">
             <label for="conference_title">Inserire il titolo della conferenza:</label>
-            <input type="text" name="conference_title" required>
+            <input type="text" name="conference_title" required value="{{ conference_title }}">
 
             <label for="conference_year">Inserire l'anno:</label>
-            <input type="text" name="conference_year" required>
+            <input type="text" name="conference_year" required value="{{ conference_year }}">
 
             <input type="submit" value="Cerca">
         </form>
