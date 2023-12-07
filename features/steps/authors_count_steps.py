@@ -50,5 +50,4 @@ def step_when_user_sees_authors_count(context):
 def step_when_user_sees_authors_chart(context):
     time.sleep(1)
     grafico_container = context.driver.find_element(By.ID, "grafico-container")
-
     assert grafico_container.is_displayed(), "Il grafico non è visibile"

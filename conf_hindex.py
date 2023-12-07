@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, flash
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -74,6 +74,12 @@ def get_year_element(soup, conference_year):
     return year_element
 
 
+def validate_years(start_year, end_year):
+    if int(start_year) > int(end_year):
+        flash(f"L'anno di inizio deve essere precedente all'anno di fine", 'error')
+        return None
+
+
 def setup_hindex_routes(app):
     @app.route('/search_hindex', methods=['GET'])
     def show_hindex():
@@ -86,12 +92,14 @@ def setup_hindex_routes(app):
         conference_list = request.form.getlist('conference_list')
 
         if start_year and end_year and conference_list:
+            validate_years(start_year, end_year)
             driver = init_driver()
 
             try:
                 conferences_list = all_conference_index(driver, start_year, end_year, conference_list)
                 if conferences_list is not None:
-                    return render_template('h_index.html', result=conferences_list)
+                    return render_template('h_index.html', result=conferences_list,
+                                           start_year=start_year, end_year=end_year, conference_list=conference_list)
             finally:
                 driver.quit()
         # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale
