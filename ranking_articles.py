@@ -141,7 +141,8 @@ def setup_classifica_routes(app):
                             article_titles = get_article_data_list(block_elements)
 
                             if article_titles is not None:
-                                return render_template('classifica.html', result=article_titles)
+                                return render_template('classifica.html', result=article_titles,
+                                                       conference_title=conference_title, conference_year=conference_year)
             finally:
                 driver.quit()
         # Se qualcosa va storto o i dati del form sono mancanti, reindirizza alla pagina principale

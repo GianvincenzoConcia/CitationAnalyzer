@@ -113,13 +113,13 @@
     <div id="input-container">
         <form action="/authcount" method="post">
             <label for="conference_title">Inserire il titolo della conferenza:</label>
-            <input type="text" name="conference_title" required>
+            <input type="text" name="conference_title" required value="{{ conference_title }}">
 
             <label for="start_year">Inserire l'anno di inizio:</label>
-            <input type="text" name="start_year" required>
+            <input type="text" name="start_year" required value="{{ start_year }}">
 
             <label for="end_year">Inserire l'anno di fine:</label>
-            <input type="text" name="end_year" required>
+            <input type="text" name="end_year" required value="{{ end_year }}">
 
             <input type="submit" value="Cerca">
         </form>
