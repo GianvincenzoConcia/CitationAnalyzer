@@ -29,12 +29,12 @@ def step_when_user_adds_conference(context):
     time.sleep(2)
 
 
-@step('l\'utente inserisce "International Conference on Automated Software Engineering" come titolo della seconda conferenza')
-def step_when_user_inserts_conference(context):
+@step('l\'utente inserisce "(.*)" come titolo della "(\\d+)"a conferenza')
+def step_when_user_inserts_conference(context, conference_name, num):
     input_conference = WebDriverWait(context.driver, 10).until(
         EC.presence_of_all_elements_located((By.NAME, 'conference_list'))
     )
-    input_conference[1].send_keys("International Conference on Automated Software Engineering")
+    input_conference[int(num) - 1].send_keys(conference_name)
     time.sleep(2)
 
 
@@ -46,10 +46,11 @@ def step_when_user_sees_hindex_ranking(context):
     context.driver.quit()
 
 
-@step('l\'utente inserisce "3D Data Processing Visualization and Transmission" come titolo della prima conferenza')
-def step_when_user_inserts_first_conference(context):
-    input_conference = WebDriverWait(context.driver, 10).until(
-        EC.presence_of_element_located((By.NAME, 'conference_list'))
-    )
-    input_conference.send_keys("3D Data Processing Visualization and Transmission")
-    time.sleep(2)
+# @step('l\'utente inserisce "3D Data Processing Visualization and Transmission" come titolo della prima conferenza')
+# def step_when_user_inserts_first_conference(context):
+#     input_conference = WebDriverWait(context.driver, 10).until(
+#         EC.presence_of_element_located((By.NAME, 'conference_list'))
+#     )
+#     input_conference.send_keys("3D Data Processing Visualization and Transmission")
+#     time.sleep(2)
+

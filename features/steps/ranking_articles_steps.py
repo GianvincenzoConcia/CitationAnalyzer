@@ -38,7 +38,7 @@ def step_when_user_enters_conference_title(context, conference_name):
     time.sleep(2)
 
 
-@step('l\'utente inserisce "(\\d{4})" come anno')
+@step('l\'utente inserisce "(\\d+)" come anno')
 def step_when_user_enters_conference_year(context, year):
     input_conference = WebDriverWait(context.driver, 10).until(
         EC.presence_of_element_located((By.NAME, 'conference_year'))
@@ -101,15 +101,6 @@ def step_when_user_select_chart(context):
         assert grafico_container.is_displayed(), "Il grafico non è visibile"
 
 
-@step('l\'utente inserisce "Conferenza non esistente" come titolo della conferenza')
-def step_when_user_search_conference_not_real(context):
-    input_conference = WebDriverWait(context.driver, 10).until(
-        EC.presence_of_element_located((By.NAME, 'conference_title'))
-    )
-    input_conference.send_keys("Conferenza non esistente")
-    time.sleep(2)
-
-
 @then("l'utente visualizza il messaggio di errore")
 def step_then_user_sees_error_message(context):
     # Assicurati di attendere che la pagina si carichi completamente
@@ -119,12 +110,3 @@ def step_then_user_sees_error_message(context):
 
     # Verifica che l'elemento sia visibile
     assert error_message_container.is_displayed(), "Il messaggio di errore non è visibile"
-
-
-@step('l\'utente inserisce "100" come anno')
-def step_impl(context):
-    input_conference = WebDriverWait(context.driver, 10).until(
-        EC.presence_of_element_located((By.NAME, 'conference_year'))
-    )
-    input_conference.send_keys("100")
-    time.sleep(2)

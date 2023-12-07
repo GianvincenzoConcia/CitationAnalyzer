@@ -3,7 +3,6 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from behave import *
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
 use_step_matcher("re")
@@ -20,21 +19,21 @@ def step_when_user_selects_authors(context):
     time.sleep(2)
 
 
-@step('l\'utente inserisce "2012" come anno d\'inizio')
-def step_when_user_inserts_start_year(context):
+@step('l\'utente inserisce "(\\d{4})" come anno d\'inizio')
+def step_when_user_inserts_start_year(context, start_year):
     input_conference = WebDriverWait(context.driver, 10).until(
         EC.presence_of_element_located((By.NAME, 'start_year'))
     )
-    input_conference.send_keys("2012")
+    input_conference.send_keys(start_year)
     time.sleep(2)
 
 
-@step('l\'utente inserisce "2012" come anno di fine')
-def step_when_user_inserts_end_year(context):
+@step('l\'utente inserisce "(\\d{4})" come anno di fine')
+def step_when_user_inserts_end_year(context, end_year):
     input_conference = WebDriverWait(context.driver, 10).until(
         EC.presence_of_element_located((By.NAME, 'end_year'))
     )
-    input_conference.send_keys("2012")
+    input_conference.send_keys(end_year)
     time.sleep(2)
 
 
