@@ -65,6 +65,7 @@ def all_conference_index(driver, start_year, end_year, conference_titles):
 
         conf_index = get_conference_hindex(block_element_list)
         conferences_list.append((conference_title, conf_index))
+    conferences_list.sort(reverse=True, key=lambda x: x[1])
     return conferences_list
 
 
