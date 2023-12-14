@@ -121,6 +121,7 @@
 
             <label for="conference_list">Inserire i titoli delle conferenze: </label>
             <div id="conference-inputs">
+                <!--<input type="text" name="conference_list" required value="{{ conference }}">-->
                 {% for conference in conference_list %}
                     <input type="text" name="conference_list" required value="{{ conference }}">
                 {% endfor %}
@@ -266,8 +267,13 @@
 
             // Aggiungi le prime due barre vuote solo se non ci sono messaggi di errore
             if (!isErrorPage) {
-                addConferenceInput();
-                addConferenceInput();
+                var container = document.getElementById("conference-inputs");
+                var existingInputs = container.querySelectorAll('input[name="conference_list"]');
+
+                if (existingInputs.length === 0) {
+                    addConferenceInput();
+                    addConferenceInput();
+                }
             }
         });
 
