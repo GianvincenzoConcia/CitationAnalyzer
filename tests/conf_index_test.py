@@ -9,11 +9,10 @@ from conf_hindex import (
     calcola_h_index,
     all_conference_index,
     get_year_element,
-    setup_hindex_routes,
 )
 
 
-class TestYourModule(unittest.TestCase):
+class TestConfHindex(unittest.TestCase):
 
     def test_init_driver(self):
         result = init_driver()
@@ -51,20 +50,6 @@ class TestYourModule(unittest.TestCase):
         soup = BeautifulSoup('<span itemprop="datePublished">2022</span>', "html.parser")
         result = get_year_element(soup, 2022)
         self.assertIsNotNone(result)
-
-    # def test_setup_hindex_routes(self):
-    #     app = MagicMock()
-    #     setup_hindex_routes(app)
-    #
-    #     # Test route /search_hindex
-    #     with app.test_request_context('/search_hindex', method='GET'):
-    #         response = app.dispatch_request()
-    #         self.assertIn(b'search_hindex', response.data)
-    #
-    #     # Test route /h_index
-    #     with app.test_request_context('/h_index', method='POST', data={'start_year': '2020', 'end_year': '2022', 'conference_list': ['Conference 1']}):
-    #         response = app.dispatch_request()
-    #         self.assertIn(b'h_index', response.data)
 
 
 if __name__ == '__main__':
