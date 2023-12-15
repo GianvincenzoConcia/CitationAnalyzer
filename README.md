@@ -1,7 +1,7 @@
 # Citation Analyzer
 
 ## Introduzione
-Il Citation Analyzer è uno strumento potente e flessibile progettato per l'analisi delle citazioni in ambito accademico. Questo README fornisce una guida completa alla progettazione, implementazione e utilizzo del tool.
+Il Citation Analyzer è uno strumento progettato per l'analisi delle citazioni in ambito accademico. Questo README fornisce una guida completa alla progettazione, implementazione e utilizzo del tool.
 
 ## Funzionalità Principali
 
