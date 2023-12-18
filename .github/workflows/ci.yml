@@ -28,6 +28,7 @@ jobs:
         pip install bs4
         pip install flask
         pip install selenium
+        python -m pip install requests
         
 
     - name: Run Pylint
