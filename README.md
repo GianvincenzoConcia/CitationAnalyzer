@@ -45,10 +45,9 @@ Per installare il Citation Analyzer e avviare l'analisi delle citazioni, seguire
 
     ```bash
     cd CitationAnalyzer
-    pip install -r requirements.txt
     ```
 
-3. Eseguire il tool:
+3. Dopo aver installato le librerie necessarie, eseguire il tool:
 
     ```bash
     python app.py
