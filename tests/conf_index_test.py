@@ -36,10 +36,8 @@ class TestConfHindex(unittest.TestCase):
         result = get_conference_hindex(block_elements_list)
         self.assertEqual(result, 0)
 
-    @patch('conf_hindex.search_conference', return_value='<html>Mocked conference page</html>')
-    @patch('conf_hindex.get_year_element', return_value=BeautifulSoup('<div>Mocked year element</div>', "html.parser"))
-    @patch('conf_hindex.get_contents_link', return_value='<div>Mocked contents page</div>')
-    def test_all_conference_index(self, mock_search_conference, mock_get_year_element, mock_get_contents_link):
+
+    def test_all_conference_index(self):
         driver = MagicMock()
         driver.page_source = '<html>Mocked search page</html>'
 
