@@ -41,10 +41,15 @@ Per installare il Citation Analyzer e avviare l'analisi delle citazioni, seguire
     git clone https://github.com/GianvincenzoConcia/CitationAnalyzer.git
     ```
 
-2. Installare le dipendenze:
+2. Spostarsi nella directory del tool:
 
     ```bash
     cd CitationAnalyzer
+    ```
+
+3. Installare le dipendenze:
+
+    ```bash
     pip install -r requirements.txt
     ```
 
