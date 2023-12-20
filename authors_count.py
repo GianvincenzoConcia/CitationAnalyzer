@@ -8,7 +8,7 @@ from ranking_articles import search_conference, get_year_element, get_contents_l
 def get_block_elements(contents_page_source):
     soup = BeautifulSoup(contents_page_source, "html.parser")
     blocks = soup.find_all("cite", attrs={"class": "data tts-content"})
-    blocks = [blocks[i] for i in range(1, len(blocks))]
+    blocks = blocks[1:]
     return blocks
 
 
@@ -58,6 +58,7 @@ def get_author_usage(driver, start_year, end_year, conference_title):
 def show_authcount():
     return render_template('authcount.html', result=None)
 
+
 def handle_authcount():
     conference_title = request.form.get('conference_title')
     start_year = request.form.get('start_year')
@@ -74,6 +75,7 @@ def handle_authcount():
         finally:
             driver.quit()
     return redirect(url_for('show_authcount'))
+
 
 def setup_authcount_routes(app):
     @app.route('/search_authcount', methods=['GET'])
