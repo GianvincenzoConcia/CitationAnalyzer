@@ -1,0 +1,8 @@
+[cosmic-ray]
+module-path = "conf_hindex.py"
+timeout = 30.0
+excluded-modules = []
+test-command = "python -m unittest /../tests/conf_index_test.py"
+
+[cosmic-ray.distributor]
+name = "local"

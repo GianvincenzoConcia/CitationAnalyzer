@@ -1,0 +1,8 @@
+[cosmic-ray]
+module-path = "authors_count.py"
+timeout = 30.0
+excluded-modules = []
+test-command = "python -m unittest /../tests/authors_count_test.py"
+
+[cosmic-ray.distributor]
+name = "local"
