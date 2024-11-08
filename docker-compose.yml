@@ -1,16 +1,6 @@
 version: '3.8'
 
 services:
-  mutpy:
-    image: mutpy-docker
-    build:
-      context: .
-    working_dir: /app
-    volumes:
-      - .:/app
-    entrypoint: ["mut.py"]
-    command: ["--target=authors_count.py", "--unit-test=authors_count_test.py"]
-
   sonarqube:
     image: sonarqube:community
     depends_on:
