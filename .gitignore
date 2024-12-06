@@ -2,6 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.DS_Store
+.vscode
+.idea
+.venv
 
 # C extensions
 *.so
@@ -24,6 +28,7 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+mutants/
 MANIFEST
 
 # PyInstaller
