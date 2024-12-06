@@ -7,6 +7,10 @@ __pycache__/
 .idea
 .venv
 
+Cosmic_Mutation/*.sqlite
+Cosmic_Mutation/*.html
+
+
 # C extensions
 *.so
 
