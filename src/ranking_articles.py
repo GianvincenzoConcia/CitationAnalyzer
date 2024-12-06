@@ -8,9 +8,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-SCOPUS_API_KEY = "ce1da58cc35b89014c26ff7de31cca85"
-
-
 # Inizializza un'istanza del driver Chrome con opzione headless
 def init_driver():
     options = webdriver.ChromeOptions()

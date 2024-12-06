@@ -2,10 +2,7 @@ from flask import render_template, request, redirect, url_for, flash
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from ranking_articles import get_block_elements, get_citations, search_conference, get_contents_link
-
-SCOPUS_API_KEY = "ce1da58cc35b89014c26ff7de31cca85"
-
+from src.ranking_articles import get_block_elements, get_citations, search_conference, get_contents_link
 
 # Inizializza un'istanza del driver Chrome con opzione headless
 def init_driver():

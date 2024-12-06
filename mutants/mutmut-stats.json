@@ -1,0 +1,97 @@
+{
+    "tests_by_mangled_function_name": {
+        "src.authors_count.x_count_authors": [
+            "tests/authors_count_test.py::TestYourModule::test_count_authors",
+            "tests/authors_count_test.py::TestYourModule::test_get_author_usage"
+        ],
+        "src.authors_count.x_get_author_usage": [
+            "tests/authors_count_test.py::TestYourModule::test_get_author_usage"
+        ],
+        "src.authors_count.x_get_authors": [
+            "tests/authors_count_test.py::TestYourModule::test_get_authors"
+        ],
+        "src.authors_count.x_get_block_elements": [
+            "tests/authors_count_test.py::TestYourModule::test_get_block_elements"
+        ],
+        "src.conf_hindex.x_all_conference_index": [
+            "tests/conf_index_test.py::TestConfHindex::test_all_conference_index"
+        ],
+        "src.conf_hindex.x_get_year_element": [
+            "tests/conf_index_test.py::TestConfHindex::test_all_conference_index",
+            "tests/conf_index_test.py::TestConfHindex::test_get_year_element"
+        ],
+        "src.conf_hindex.x_get_conference_hindex": [
+            "tests/conf_index_test.py::TestConfHindex::test_all_conference_index",
+            "tests/conf_index_test.py::TestConfHindex::test_handles_empty_block_elements_list"
+        ],
+        "src.conf_hindex.x_calcola_h_index": [
+            "tests/conf_index_test.py::TestConfHindex::test_all_conference_index",
+            "tests/conf_index_test.py::TestConfHindex::test_calcola_h_index",
+            "tests/conf_index_test.py::TestConfHindex::test_handles_empty_block_elements_list"
+        ],
+        "src.ranking_articles.x_search_conference": [
+            "tests/ranking_articles_test.py::TestRankingArticles::test_search_conference_found",
+            "tests/conf_index_test.py::TestConfHindex::test_all_conference_index",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_search_conference_not_found"
+        ],
+        "src.conf_hindex.x_init_driver": [
+            "tests/conf_index_test.py::TestConfHindex::test_init_driver"
+        ],
+        "src.ranking_articles.x_get_citations": [
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_article_data_list"
+        ],
+        "src.ranking_articles.x_setup_classifica_routes": [
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_contents_link_not_found",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_year_element_not_found",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_init_driver",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_block_elements",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_search_conference_found",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_contents_link_exception",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_year_element",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_article_data_list",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_search_conference_not_found",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_contents_link"
+        ],
+        "src.ranking_articles.x_get_block_elements": [
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_block_elements",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_article_data_list"
+        ],
+        "src.ranking_articles.x_get_article_data_list": [
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_article_data_list"
+        ],
+        "src.ranking_articles.x_get_contents_link": [
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_contents_link_not_found",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_contents_link_exception",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_contents_link"
+        ],
+        "src.ranking_articles.x_get_year_element": [
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_year_element_not_found",
+            "tests/ranking_articles_test.py::TestRankingArticles::test_get_year_element"
+        ],
+        "src.ranking_articles.x_init_driver": [
+            "tests/ranking_articles_test.py::TestRankingArticles::test_init_driver"
+        ]
+    },
+    "duration_by_test": {
+        "tests/authors_count_test.py::TestYourModule::test_count_authors": 5.887500000001378e-05,
+        "tests/authors_count_test.py::TestYourModule::test_get_author_usage": 6.049999999996336e-05,
+        "tests/authors_count_test.py::TestYourModule::test_get_authors": 5.208400000000779e-05,
+        "tests/authors_count_test.py::TestYourModule::test_get_block_elements": 6.887499999996827e-05,
+        "tests/conf_index_test.py::TestConfHindex::test_all_conference_index": 6.0832999999982373e-05,
+        "tests/conf_index_test.py::TestConfHindex::test_calcola_h_index": 4.9292000000034086e-05,
+        "tests/conf_index_test.py::TestConfHindex::test_get_year_element": 4.6458999999998696e-05,
+        "tests/conf_index_test.py::TestConfHindex::test_handles_empty_block_elements_list": 4.754200000001152e-05,
+        "tests/conf_index_test.py::TestConfHindex::test_init_driver": 0.000189875000000006,
+        "tests/ranking_articles_test.py::TestRankingArticles::test_get_article_data_list": 6.979200000012398e-05,
+        "tests/ranking_articles_test.py::TestRankingArticles::test_get_block_elements": 9.600000000009601e-05,
+        "tests/ranking_articles_test.py::TestRankingArticles::test_get_contents_link": 6.620900000009478e-05,
+        "tests/ranking_articles_test.py::TestRankingArticles::test_get_contents_link_exception": 6.145800000001422e-05,
+        "tests/ranking_articles_test.py::TestRankingArticles::test_get_contents_link_not_found": 5.7416000000198864e-05,
+        "tests/ranking_articles_test.py::TestRankingArticles::test_get_year_element": 5.649999999990385e-05,
+        "tests/ranking_articles_test.py::TestRankingArticles::test_get_year_element_not_found": 9.749999999986159e-05,
+        "tests/ranking_articles_test.py::TestRankingArticles::test_init_driver": 0.00018120900000040407,
+        "tests/ranking_articles_test.py::TestRankingArticles::test_search_conference_found": 7.600000000040907e-05,
+        "tests/ranking_articles_test.py::TestRankingArticles::test_search_conference_not_found": 9.6250000000353e-05
+    },
+    "stats_time": 0.25106999999999996
+}

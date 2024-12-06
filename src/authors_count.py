@@ -1,9 +1,9 @@
+
 from bs4 import BeautifulSoup
 from flask import render_template, request, redirect, url_for
-from conf_hindex import validate_years
 
-from ranking_articles import search_conference, get_year_element, get_contents_link, init_driver
-
+from src.conf_hindex import validate_years
+from src.ranking_articles import search_conference, get_year_element, get_contents_link, init_driver
 
 def get_block_elements(contents_page_source):
     soup = BeautifulSoup(contents_page_source, "html.parser")
